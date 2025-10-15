@@ -1,0 +1,63 @@
+{
+  "runs": [
+    {
+      "fixture": "test_001.yaml",
+      "mr_latency_ms": 49,
+      "ers_latency_ms": 34,
+      "decision": "approve",
+      "reasons": [
+        "no policy triggers, approved"
+      ]
+    },
+    {
+      "fixture": "test_002.yaml",
+      "mr_latency_ms": 46,
+      "ers_latency_ms": 36,
+      "decision": "approve",
+      "reasons": [
+        "no policy triggers, approved"
+      ]
+    },
+    {
+      "fixture": "test_003.yaml",
+      "mr_latency_ms": 47,
+      "ers_latency_ms": 34,
+      "decision": "veto",
+      "reasons": [
+        "risk_percent 3.5 > 2.0"
+      ]
+    },
+    {
+      "fixture": "test_004.yaml",
+      "mr_latency_ms": 48,
+      "ers_latency_ms": 34,
+      "decision": "veto",
+      "reasons": [
+        "stop_loss 0.5 < 1.2 * atr14 (0.72)"
+      ]
+    },
+    {
+      "fixture": "test_005.yaml",
+      "mr_latency_ms": 48,
+      "ers_latency_ms": 33,
+      "decision": "approve",
+      "reasons": [
+        "stop_loss 1.2 >= 1.2 * atr14 (1.2)"
+      ]
+    }
+  ],
+  "summary": {
+    "count": 5,
+    "mr_p50_ms": 48,
+    "ers_p50_ms": 34,
+    "mr_p95_ms": 48,
+    "ers_p95_ms": 34,
+    "decisions": {
+      "veto": 2,
+      "approve": 3
+    },
+    "estimated_token_in": 0,
+    "estimated_token_out": 0,
+    "estimated_cost_gbp": 0.0
+  }
+}
