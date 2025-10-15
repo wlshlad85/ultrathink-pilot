@@ -1,0 +1,12 @@
+# virtualenv
+.venv/
+# python cache
+__pycache__/
+*.py[cod]
+# pytest cache
+.pytest_cache/
+# local temp files
+tmp/
+*.log
+# OS files
+.DS_Store
