@@ -1,0 +1,7 @@
+task: "ERS passes compliant trade."
+input_mr_sr:
+  risk_percent: 1.0
+  stop_loss: 1.2
+  atr14: 1.0
+expected:
+  ers_decision: approve

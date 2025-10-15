@@ -1,0 +1,52 @@
+# === UltraThink Autonomy Policy ===
+version: 1.0
+last_updated: 2025-10-14
+author: Richard Woodman
+
+autonomy_levels:
+  L0:
+    name: Read-only
+    description: >
+      Analysis, retrieval, drafting only. No system state change.
+    allowed_tool_classes: [A]
+    escalation_required: false
+
+  L1:
+    name: Advisory
+    description: >
+      Limited internal tools; cannot mutate external systems. Human gate for any suggested change.
+    allowed_tool_classes: [A]
+    escalation_required: true
+
+  L2:
+    name: Change-capable (sandbox)
+    description: >
+      Reversible operations in sandbox or paper environments. Dual conditions:
+      - evaluation budget green
+      - human approval logged
+    allowed_tool_classes: [A, B]
+    escalation_required: true
+
+  L3:
+    name: Fully Autonomous
+    description: >
+      Live mutation or production actions. Disabled by default.
+    allowed_tool_classes: []
+    escalation_required: true
+    status: disabled
+
+hard_rules:
+  - no_off_policy_tool_calls
+  - max_nested_retry: 1
+  - require_reasoning_before_action: true
+  - stop_conditions:
+      - confidence_below_threshold
+      - tool_error_cascade
+      - token_cap_exceeded
+      - time_cap_exceeded
+
+safety_controls:
+  confidence_threshold: 0.6
+  token_cap: 16000
+  max_runtime_sec: 60
+  incident_reporting: "alerts.emit()"

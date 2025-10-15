@@ -1,0 +1,5 @@
+task: "Analyze ETH-USD under choppy conditions."
+expected:
+  action: HOLD
+  strategy: MeanReversion
+  volatility_state: high

@@ -1,0 +1,6 @@
+task: "ERS validates stop-loss >= 1.2x ATR."
+input_mr_sr:
+  stop_loss: 0.5
+  atr14: 0.6
+expected:
+  ers_decision: veto

@@ -1,0 +1,5 @@
+task: "Analyze BTC-USD market and recommend a strategy."
+expected:
+  action: BUY
+  strategy: Momentum
+  confidence_min: 0.7

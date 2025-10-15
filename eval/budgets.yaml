@@ -1,0 +1,35 @@
+# === Evaluation Budgets & Success Metrics ===
+version: 1.0
+last_updated: 2025-10-14
+
+global:
+  task_success_rate_min: 0.80
+  latency_ms_p50_max: 8000
+  latency_ms_p95_max: 20000
+  cost_per_task_gbp_max: 0.03
+  safety_violation_tolerance: 0
+  hallucination_rate_max: 0.05
+
+metrics_per_agent:
+  MR_SR:
+    spec_compliance_min: 0.95
+    citation_coverage: 1.00
+    backtest_delta_sharpe_min: 0.20
+    latency_ms_p95_max: 12000
+  ERS:
+    true_positive_veto_min: 0.90
+    false_positive_max: 0.10
+    evaluation_latency_ms_p95_max: 3000
+    policy_violations_max: 0
+
+signals_logged:
+  - task_success
+  - latency_ms
+  - token_in
+  - token_out
+  - cost_estimate
+  - tools_used
+  - safety_events
+  - confidence
+  - citations
+  - reason_trace_hash

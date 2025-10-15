@@ -1,0 +1,56 @@
+# === Tool Registry ===
+version: 1.0
+last_updated: 2025-10-14
+
+tool_classes:
+  A:   # Read / compute
+    description: Data retrieval, computation, and backtesting tools.
+  B:   # Sandbox mutate
+    description: Paper trades, simulation writes, and reversible ops.
+  C:   # Production mutate
+    description: Live trading, config alteration, irreversible ops (forbidden).
+
+tools:
+  web_readonly:
+    class: A
+    timeout_sec: 15
+    description: "Fetch and parse public web data."
+    rate_limit_per_minute: 5
+
+  yfinance_readonly:
+    class: A
+    timeout_sec: 10
+    description: "Pull OHLCV data for crypto assets."
+
+  indicators.compute:
+    class: A
+    timeout_sec: 5
+    description: "Compute TA indicators such as RSI, MACD, EMA."
+
+  backtest.simulate:
+    class: A
+    timeout_sec: 20
+    description: "Run read-only backtests using historical data."
+
+  risk.evaluate:
+    class: A
+    timeout_sec: 5
+    description: "Run risk metrics—VaR-lite, drawdown, exposure."
+
+  policy.check:
+    class: A
+    timeout_sec: 3
+    description: "Validate agent output against policy constraints."
+
+  portfolio.readonly:
+    class: A
+    timeout_sec: 3
+    description: "Read current portfolio positions."
+
+  alerts.emit:
+    class: B
+    timeout_sec: 2
+    description: "Send alerts to Ops/SRE channels (non-blocking)."
+
+# Default timeout for any unlisted tool (fail closed)
+default_timeout_sec: 10
