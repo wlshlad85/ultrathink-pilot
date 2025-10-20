@@ -1,0 +1,285 @@
+#!/usr/bin/env python3
+"""
+Training script for PPO agent on trading environment.
+Supports GPU training with CUDA.
+"""
+import sys
+from pathlib import Path
+import argparse
+import json
+from datetime import datetime
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
+import matplotlib.pyplot as plt
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from rl.trading_env import TradingEnv
+from rl.ppo_agent import PPOAgent
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class TrainingLogger:
+    """Log training metrics and generate plots."""
+
+    def __init__(self, log_dir: str = "rl/logs"):
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+
+        self.episode_rewards = []
+        self.episode_returns = []
+        self.episode_lengths = []
+        self.training_metrics = []
+
+    def log_episode(self, episode: int, reward: float, return_pct: float, length: int):
+        """Log episode results."""
+        self.episode_rewards.append(reward)
+        self.episode_returns.append(return_pct)
+        self.episode_lengths.append(length)
+
+        logger.info(
+            f"Episode {episode}: Reward={reward:.4f}, "
+            f"Return={return_pct:.2f}%, Length={length}"
+        )
+
+    def log_training_metrics(self, metrics: dict):
+        """Log training metrics from PPO update."""
+        self.training_metrics.append(metrics)
+
+    def plot_training(self, filepath: str = None):
+        """Generate training plots."""
+        if filepath is None:
+            filepath = self.log_dir / f"training_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+
+        fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+
+        # Episode rewards
+        axes[0, 0].plot(self.episode_rewards)
+        axes[0, 0].set_title('Episode Rewards')
+        axes[0, 0].set_xlabel('Episode')
+        axes[0, 0].set_ylabel('Total Reward')
+        axes[0, 0].grid(True)
+
+        # Episode returns
+        axes[0, 1].plot(self.episode_returns)
+        axes[0, 1].set_title('Portfolio Returns (%)')
+        axes[0, 1].set_xlabel('Episode')
+        axes[0, 1].set_ylabel('Return %')
+        axes[0, 1].grid(True)
+
+        # Episode lengths
+        axes[1, 0].plot(self.episode_lengths)
+        axes[1, 0].set_title('Episode Lengths')
+        axes[1, 0].set_xlabel('Episode')
+        axes[1, 0].set_ylabel('Steps')
+        axes[1, 0].grid(True)
+
+        # Training loss
+        if self.training_metrics:
+            losses = [m['loss'] for m in self.training_metrics]
+            axes[1, 1].plot(losses)
+            axes[1, 1].set_title('Training Loss')
+            axes[1, 1].set_xlabel('Update Step')
+            axes[1, 1].set_ylabel('Loss')
+            axes[1, 1].grid(True)
+
+        plt.tight_layout()
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        logger.info(f"Training plots saved to {filepath}")
+        plt.close()
+
+    def save_metrics(self, filepath: str = None):
+        """Save metrics to JSON."""
+        if filepath is None:
+            filepath = self.log_dir / f"metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+        metrics = {
+            'episode_rewards': self.episode_rewards,
+            'episode_returns': self.episode_returns,
+            'episode_lengths': self.episode_lengths,
+            'training_metrics': self.training_metrics
+        }
+
+        with open(filepath, 'w') as f:
+            json.dump(metrics, f, indent=2)
+
+        logger.info(f"Metrics saved to {filepath}")
+
+
+def train(
+    num_episodes: int = 100,
+    max_steps: int = 1000,
+    update_freq: int = 2048,
+    save_freq: int = 10,
+    symbol: str = "BTC-USD",
+    start_date: str = "2023-01-01",
+    end_date: str = "2024-01-01",
+    initial_capital: float = 100000.0,
+    model_dir: str = "rl/models",
+    log_dir: str = "rl/logs"
+):
+    """
+    Train PPO agent on trading environment.
+
+    Args:
+        num_episodes: Number of training episodes
+        max_steps: Maximum steps per episode
+        update_freq: Update policy after this many steps
+        save_freq: Save model every N episodes
+        symbol: Trading symbol
+        start_date: Training data start date
+        end_date: Training data end date
+        initial_capital: Initial portfolio capital
+        model_dir: Directory to save models
+        log_dir: Directory to save logs
+    """
+    # Create directories
+    model_dir = Path(model_dir)
+    model_dir.mkdir(parents=True, exist_ok=True)
+
+    # Initialize environment
+    logger.info("Initializing environment...")
+    env = TradingEnv(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        initial_capital=initial_capital
+    )
+
+    # Initialize agent
+    logger.info("Initializing PPO agent...")
+    agent = PPOAgent(
+        state_dim=env.observation_space.shape[0],
+        action_dim=env.action_space.n,
+        lr=3e-4,
+        gamma=0.99,
+        eps_clip=0.2,
+        k_epochs=4
+    )
+
+    # Initialize logger
+    training_logger = TrainingLogger(log_dir=log_dir)
+
+    # Training loop
+    logger.info("Starting training...")
+    logger.info(f"Episodes: {num_episodes}, Update freq: {update_freq}")
+    logger.info(f"Device: {agent.device}")
+
+    total_steps = 0
+    best_return = -float('inf')
+
+    for episode in range(1, num_episodes + 1):
+        state, info = env.reset()
+        episode_reward = 0
+        episode_steps = 0
+
+        for step in range(max_steps):
+            # Select action
+            action = agent.select_action(state)
+
+            # Take step
+            next_state, reward, terminated, truncated, info = env.step(action)
+
+            # Store reward and terminal
+            agent.store_reward_and_terminal(reward, terminated or truncated)
+
+            episode_reward += reward
+            episode_steps += 1
+            total_steps += 1
+            state = next_state
+
+            # Update policy
+            if total_steps % update_freq == 0:
+                metrics = agent.update()
+                training_logger.log_training_metrics(metrics)
+                logger.info(f"Updated policy at step {total_steps}: {metrics}")
+
+            if terminated or truncated:
+                break
+
+        # Log episode
+        final_return = info['total_return']
+        training_logger.log_episode(episode, episode_reward, final_return, episode_steps)
+
+        # Save best model
+        if final_return > best_return:
+            best_return = final_return
+            best_model_path = model_dir / "best_model.pth"
+            agent.save(str(best_model_path))
+            logger.info(f"New best return: {best_return:.2f}% - Model saved")
+
+        # Save checkpoint
+        if episode % save_freq == 0:
+            checkpoint_path = model_dir / f"checkpoint_ep{episode}.pth"
+            agent.save(str(checkpoint_path))
+            logger.info(f"Checkpoint saved: {checkpoint_path}")
+
+            # Generate plots
+            training_logger.plot_training()
+            training_logger.save_metrics()
+
+    # Final save
+    final_model_path = model_dir / "final_model.pth"
+    agent.save(str(final_model_path))
+
+    # Generate final plots
+    training_logger.plot_training(model_dir / "final_training.png")
+    training_logger.save_metrics(model_dir / "final_metrics.json")
+
+    logger.info("Training completed!")
+    logger.info(f"Best return: {best_return:.2f}%")
+    logger.info(f"Final model saved to: {final_model_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Train PPO agent for trading")
+
+    # Training parameters
+    parser.add_argument("--episodes", type=int, default=100, help="Number of episodes")
+    parser.add_argument("--max-steps", type=int, default=1000, help="Max steps per episode")
+    parser.add_argument("--update-freq", type=int, default=2048, help="Policy update frequency")
+    parser.add_argument("--save-freq", type=int, default=10, help="Model save frequency")
+
+    # Environment parameters
+    parser.add_argument("--symbol", default="BTC-USD", help="Trading symbol")
+    parser.add_argument("--start-date", default="2023-01-01", help="Training start date")
+    parser.add_argument("--end-date", default="2024-01-01", help="Training end date")
+    parser.add_argument("--capital", type=float, default=100000.0, help="Initial capital")
+
+    # Paths
+    parser.add_argument("--model-dir", default="rl/models", help="Model save directory")
+    parser.add_argument("--log-dir", default="rl/logs", help="Log directory")
+
+    args = parser.parse_args()
+
+    print("\n" + "="*70)
+    print("UltraThink RL Training")
+    print("="*70)
+    print(f"Symbol:          {args.symbol}")
+    print(f"Period:          {args.start_date} to {args.end_date}")
+    print(f"Episodes:        {args.episodes}")
+    print(f"Update Freq:     {args.update_freq}")
+    print(f"Initial Capital: ${args.capital:,.2f}")
+    print("="*70 + "\n")
+
+    train(
+        num_episodes=args.episodes,
+        max_steps=args.max_steps,
+        update_freq=args.update_freq,
+        save_freq=args.save_freq,
+        symbol=args.symbol,
+        start_date=args.start_date,
+        end_date=args.end_date,
+        initial_capital=args.capital,
+        model_dir=args.model_dir,
+        log_dir=args.log_dir
+    )
+
+
+if __name__ == "__main__":
+    main()

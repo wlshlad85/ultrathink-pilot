@@ -46,3 +46,14 @@ urllib3==2.5.0
 websockets==15.0.1
 wheel==0.45.1
 yfinance==0.2.66
+
+# Reinforcement Learning (REQUIRED for RL system)
+torch>=2.0.0
+gymnasium>=0.29.0        # REQUIRED for TradingEnv and PPO training
+matplotlib>=3.7.0        # REQUIRED for RL training plots and visualization
+
+# Optional: Additional data sources
+# ccxt>=4.0.0              # For Binance and other crypto exchanges
+# python-binance>=1.0.0    # For direct Binance API
+# cryptocompare>=0.7.0     # For CryptoCompare data
+# alpha_vantage>=2.3.0     # For Alpha Vantage data

@@ -3,13 +3,13 @@
 Simple two-agent orchestrator for the pilot.
 Runs MR-SR -> ERS for each fixture under tests/agentic/basic and produces a run_report.md.
 """
-import subprocess, glob, os, json, sys
+import subprocess, glob, os, json, sys, tempfile
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIR = ROOT / "tests" / "agentic" / "basic"
-TMPDIR = Path("/tmp/ultrathink_orch")
+TMPDIR = Path(tempfile.gettempdir()) / "ultrathink_orch"
 TMPDIR.mkdir(parents=True, exist_ok=True)
 REPORT_PATH = ROOT / "eval" / "run_report.md"
 
@@ -24,10 +24,17 @@ def process_fixture(fpath):
     mr_out = TMPDIR / f"mr_{base}.json"
     ers_out = TMPDIR / f"ers_{base}.json"
 
+    # Set PYTHONPATH to include project root
+    env = os.environ.copy()
+    env['PYTHONPATH'] = str(ROOT)
+
     # run MR-SR
-    run_cmd(f'python agents/mr_sr.py --fixture "{fpath}" --asset BTC-USD --out "{mr_out}"')
+    mr_cmd = [sys.executable, str(ROOT / "agents" / "mr_sr.py"), "--fixture", str(fpath), "--asset", "BTC-USD", "--out", str(mr_out)]
+    subprocess.run(mr_cmd, check=True, env=env)
+
     # run ERS
-    run_cmd(f'python agents/ers.py --in "{mr_out}" --out "{ers_out}"')
+    ers_cmd = [sys.executable, str(ROOT / "agents" / "ers.py"), "--in", str(mr_out), "--out", str(ers_out)]
+    subprocess.run(ers_cmd, check=True, env=env)
 
     # load ERS result
     with open(ers_out,'r') as f:
@@ -49,7 +56,7 @@ def main(dry=False):
     # write a simple markdown report
     with open(REPORT_PATH, "w") as f:
         f.write(f"# Orchestration run report\n\n")
-        f.write(f"Run at: {datetime.utcnow().isoformat()}Z\n\n")
+        f.write(f"Run at: {datetime.now(timezone.utc).isoformat()}\n\n")
         f.write("| fixture | decision | reasons |\n")
         f.write("|---|---|---|\n")
         for name, decision, reasons in summary:

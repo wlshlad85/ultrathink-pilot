@@ -1,0 +1,48 @@
+
+================================================================================
+TRADE FORENSICS REPORT: 2024-02-20 to 2024-06-28
+================================================================================
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Decisions:       130
+  HOLD:                104 (80.0%)
+  BUY:                 19 (14.6%)
+  SELL:                7 (5.4%)
+
+FAILURE ANALYSIS
+--------------------------------------------------------------------------------
+Bad Decisions:         2 (1.5%)
+Total Cost:            $2,803.33
+Avg Cost per Failure:  $1,401.66
+
+FAILURE PATTERNS (by frequency)
+--------------------------------------------------------------------------------
+  momentum_misread         :    1 ( 50.0%) - Cost: $1,766.62
+  caught_falling_knife     :    1 ( 50.0%) - Cost: $1,036.71
+
+PERFORMANCE BY MARKET REGIME
+--------------------------------------------------------------------------------
+
+  BULL Market:
+    Decisions:        55
+    Bad Decisions:    1 (1.8%)
+    Cost:             $1,766.62
+
+  NEUTRAL Market:
+    Decisions:        43
+    Bad Decisions:    1 (2.3%)
+    Cost:             $1,036.71
+
+  BEAR Market:
+    Decisions:        32
+    Bad Decisions:    0 (0.0%)
+    Cost:             $0.00
+
+TOP 10 MOST COSTLY MISTAKES
+--------------------------------------------------------------------------------
+ 1. [BAD] 2024-04-12: BUY @ $67195.87 (confidence: 34.9%) → 5d return: -8.81% | Pattern: momentum_misread | Cost: $1,766.62
+ 2. [BAD] 2024-06-21: BUY @ $64096.20 (confidence: 35.6%) → 5d return: -5.12% | Pattern: caught_falling_knife | Cost: $1,036.71
+
+================================================================================
+

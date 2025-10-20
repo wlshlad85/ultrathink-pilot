@@ -1,0 +1,94 @@
+{
+  "validation_2022": {
+    "total_return_pct": -2.3945948469361027,
+    "annualized_return_pct": -2.4010937866021376,
+    "final_value": 97605.4051530639,
+    "annualized_volatility_pct": 3.755339946840582,
+    "max_drawdown_pct": -3.5680909012617645,
+    "sharpe_ratio": -1.171956160801058,
+    "sortino_ratio": -1.3743608020936209,
+    "calmar_ratio": -0.6729351502096126,
+    "num_trades": 227,
+    "win_rate_pct": 45.81497797356828,
+    "avg_win": 0.0014008103988753938,
+    "avg_loss": -0.0010426349210318037,
+    "profit_factor": 1.3972703056873454,
+    "action_distribution": {
+      "BUY": 218,
+      "HOLD": 45,
+      "SELL": 9
+    },
+    "total_steps": 272,
+    "total_days": 364,
+    "initial_capital": 100000.0
+  },
+  "test_2023": {
+    "total_return_pct": 0.9988832537621493,
+    "annualized_return_pct": 1.0016411363712674,
+    "final_value": 100998.88325376215,
+    "annualized_volatility_pct": 1.6315011811146263,
+    "max_drawdown_pct": -1.0764637162199082,
+    "sharpe_ratio": -0.6119265343998485,
+    "sortino_ratio": -0.6618273427715843,
+    "calmar_ratio": 0.9304922416601401,
+    "num_trades": 254,
+    "win_rate_pct": 29.133858267716533,
+    "avg_win": 0.0007245052404863005,
+    "avg_loss": -0.0004125431336869813,
+    "profit_factor": 1.8565465702885617,
+    "action_distribution": {
+      "BUY": 229,
+      "SELL": 25,
+      "HOLD": 18
+    },
+    "total_steps": 272,
+    "total_days": 364,
+    "initial_capital": 100000.0
+  },
+  "test_2024": {
+    "total_return_pct": 1.3430850352970591,
+    "annualized_return_pct": 1.3430850352970536,
+    "final_value": 101343.08503529706,
+    "annualized_volatility_pct": 2.6898764825703503,
+    "max_drawdown_pct": -1.745906794386369,
+    "sharpe_ratio": -0.24421752038042355,
+    "sortino_ratio": -0.33091928729050624,
+    "calmar_ratio": 0.7692764812047744,
+    "num_trades": 239,
+    "win_rate_pct": 35.146443514644346,
+    "avg_win": 0.0011939687973270478,
+    "avg_loss": -0.0009166578885220735,
+    "profit_factor": 1.764709784338178,
+    "action_distribution": {
+      "BUY": 218,
+      "HOLD": 34,
+      "SELL": 21
+    },
+    "total_steps": 273,
+    "total_days": 365,
+    "initial_capital": 100000.0
+  },
+  "test_full": {
+    "total_return_pct": 2.416768318099334,
+    "annualized_return_pct": 1.2011701108733952,
+    "final_value": 102416.76831809933,
+    "annualized_volatility_pct": 2.177168053043219,
+    "max_drawdown_pct": -1.7459067943864197,
+    "sharpe_ratio": -0.36691236949302564,
+    "sortino_ratio": -0.4304562656433787,
+    "calmar_ratio": 0.6879921166098295,
+    "num_trades": 496,
+    "win_rate_pct": 32.45967741935484,
+    "avg_win": 0.0009294635479573668,
+    "avg_loss": -0.0006654695327431388,
+    "profit_factor": 1.7989539578683755,
+    "action_distribution": {
+      "BUY": 444,
+      "SELL": 52,
+      "HOLD": 51
+    },
+    "total_steps": 547,
+    "total_days": 730,
+    "initial_capital": 100000.0
+  }
+}

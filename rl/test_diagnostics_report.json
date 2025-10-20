@@ -1,0 +1,85 @@
+{
+  "overall_correlation": 0.21974382071550344,
+  "mean_episode_correlation": 0.22793328653083691,
+  "episodes_with_positive_corr": "5",
+  "episodes_with_high_corr": "0",
+  "mean_reward": 2.4484903183917757,
+  "mean_return": 7.209948284511729,
+  "episode_metrics": [
+    {
+      "correlation": 0.3055082338614455,
+      "reward_mean": -1.0372645559354887,
+      "reward_std": 20.571857327884732,
+      "reward_min": -51.31271183135737,
+      "reward_max": 53.56805532336139,
+      "final_return_pct": -6.08504590046639,
+      "total_reward": -51.86322779677444,
+      "action_distribution": {
+        "2": 20,
+        "0": 16,
+        "1": 14
+      },
+      "episode": "0"
+    },
+    {
+      "correlation": 0.2817183797681545,
+      "reward_mean": 4.339173076663613,
+      "reward_std": 21.301259395984044,
+      "reward_min": -34.68933468935117,
+      "reward_max": 56.67564224998005,
+      "final_return_pct": 22.780685048212135,
+      "total_reward": 216.95865383318065,
+      "action_distribution": {
+        "0": 20,
+        "2": 17,
+        "1": 13
+      },
+      "episode": "1"
+    },
+    {
+      "correlation": 0.10544083285208465,
+      "reward_mean": 5.096680482802142,
+      "reward_std": 19.696006183594907,
+      "reward_min": -30.625177610866498,
+      "reward_max": 46.555848619849066,
+      "final_return_pct": 27.67540567962765,
+      "total_reward": 254.83402414010712,
+      "action_distribution": {
+        "0": 21,
+        "1": 15,
+        "2": 14
+      },
+      "episode": "2"
+    },
+    {
+      "correlation": 0.264653030895863,
+      "reward_mean": 0.9333854221824721,
+      "reward_std": 21.322316169805088,
+      "reward_min": -68.59021057892608,
+      "reward_max": 44.71522883581793,
+      "final_return_pct": 3.5957706744777163,
+      "total_reward": 46.669271109123606,
+      "action_distribution": {
+        "0": 19,
+        "1": 18,
+        "2": 13
+      },
+      "episode": "3"
+    },
+    {
+      "correlation": 0.18234595527663686,
+      "reward_mean": 2.9104771662461406,
+      "reward_std": 20.292757321546063,
+      "reward_min": -44.6379769469147,
+      "reward_max": 48.73712399655331,
+      "final_return_pct": 14.318028701463081,
+      "total_reward": 145.52385831230703,
+      "action_distribution": {
+        "2": 22,
+        "1": 16,
+        "0": 12
+      },
+      "episode": "4"
+    }
+  ]
+}

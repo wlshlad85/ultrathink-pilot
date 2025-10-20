@@ -1,13 +1,17 @@
 import glob
 import subprocess
 import json
+import sys
+import os
+import tempfile
 from pathlib import Path
 import yaml
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIR = ROOT / "tests" / "agentic" / "basic"
-TMPDIR = Path("/tmp/ultrathink_orch")
+TMPDIR = Path(tempfile.gettempdir()) / "ultrathink_orch"
+TMPDIR.mkdir(parents=True, exist_ok=True)
 
 def run_cmd(cmd):
     proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -25,11 +29,21 @@ def test_agent_pipeline_matches_fixture(fixture_path):
     mr_out = TMPDIR / f"mr_{base}.json"
     ers_out = TMPDIR / f"ers_{base}.json"
 
+    # Set PYTHONPATH to include project root
+    env = os.environ.copy()
+    env['PYTHONPATH'] = str(ROOT)
+
     # run MR-SR
-    run_cmd(f'python agents/mr_sr.py --fixture "{fixture_path}" --asset BTC-USD --out "{mr_out}"')
+    mr_cmd = [sys.executable, str(ROOT / "agents" / "mr_sr.py"), "--fixture", str(fixture_path), "--asset", "BTC-USD", "--out", str(mr_out)]
+    result = subprocess.run(mr_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"MR-SR failed: {result.stderr}")
 
     # run ERS
-    run_cmd(f'python agents/ers.py --in "{mr_out}" --out "{ers_out}"')
+    ers_cmd = [sys.executable, str(ROOT / "agents" / "ers.py"), "--in", str(mr_out), "--out", str(ers_out)]
+    result = subprocess.run(ers_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"ERS failed: {result.stderr}")
 
     # load ERS result
     with open(ers_out,"r") as f:

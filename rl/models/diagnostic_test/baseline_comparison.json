@@ -1,0 +1,67 @@
+{
+  "correlations": {
+    "baseline": {
+      "correlation": 0.8311201713228765,
+      "p_value": 2.3528623083961146e-52
+    },
+    "fixed": {
+      "correlation": 0.9999999999999998,
+      "p_value": 0.0
+    },
+    "improvement": {
+      "correlation_delta": 0.16887982867712326,
+      "correlation_change_pct": 20.319543972602755
+    }
+  },
+  "reward_ranges": {
+    "baseline": {
+      "min": -908.2413697314586,
+      "max": -201.66295240007642,
+      "mean": -563.5024288023044,
+      "std": 122.61803286422918,
+      "range": 706.5784173313822
+    },
+    "fixed": {
+      "min": -0.09287911078133339,
+      "max": 0.2354513719412061,
+      "mean": 0.05804101126077512,
+      "std": 0.06344568213578895,
+      "range": 0.3283304827225395
+    }
+  },
+  "alignment": {
+    "baseline": {
+      "sign_agreement_pct": 8.5,
+      "correct_episodes": 17,
+      "total_episodes": 200
+    },
+    "fixed": {
+      "sign_agreement_pct": 100.0,
+      "correct_episodes": 50,
+      "total_episodes": 50
+    },
+    "improvement": {
+      "alignment_delta_pct": 91.5
+    }
+  },
+  "returns": {
+    "baseline": {
+      "mean_return_pct": 2.9570566425377702,
+      "total_return_pct": 591.411328507554,
+      "std_pct": 2.3536518479151685,
+      "sharpe_ratio": 1.2563696050276463
+    },
+    "fixed": {
+      "mean_return_pct": 0.5804101126077523,
+      "total_return_pct": 29.020505630387614,
+      "std_pct": 0.6344568213578903,
+      "sharpe_ratio": 0.9148142049533569
+    }
+  },
+  "metadata": {
+    "baseline_file": "rl\\models\\sharpe_universal\\training_metrics.json",
+    "fixed_file": "rl\\models\\diagnostic_test\\final_metrics.json",
+    "baseline_episodes": 200,
+    "fixed_episodes": 50
+  }
+}

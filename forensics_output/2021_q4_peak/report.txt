@@ -1,0 +1,53 @@
+
+================================================================================
+TRADE FORENSICS REPORT: 2021-11-20 to 2021-12-29
+================================================================================
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Decisions:       40
+  HOLD:                27 (67.5%)
+  BUY:                 13 (32.5%)
+  SELL:                0 (0.0%)
+
+FAILURE ANALYSIS
+--------------------------------------------------------------------------------
+Bad Decisions:         8 (20.0%)
+Total Cost:            $7,955.12
+Avg Cost per Failure:  $994.39
+
+FAILURE PATTERNS (by frequency)
+--------------------------------------------------------------------------------
+  fought_the_trend         :    4 ( 50.0%) - Cost: $3,669.23
+
+PERFORMANCE BY MARKET REGIME
+--------------------------------------------------------------------------------
+
+  BULL Market:
+    Decisions:        1
+    Bad Decisions:    0 (0.0%)
+    Cost:             $0.00
+
+  NEUTRAL Market:
+    Decisions:        6
+    Bad Decisions:    3 (50.0%)
+    Cost:             $3,665.98
+
+  BEAR Market:
+    Decisions:        33
+    Bad Decisions:    5 (15.2%)
+    Cost:             $4,289.14
+
+TOP 10 MOST COSTLY MISTAKES
+--------------------------------------------------------------------------------
+ 1. [BAD] 2021-11-21: BUY @ $58730.48 (confidence: 36.3%) → 5d return: -8.79% | Pattern: other | Cost: $1,757.42
+ 2. [BAD] 2021-11-26: BUY @ $53569.77 (confidence: 36.6%) → 5d return: +6.83% | Pattern: fought_the_trend | Cost: $1,366.34
+ 3. [BAD] 2021-12-03: BUY @ $53598.25 (confidence: 34.2%) → 5d return: -5.77% | Pattern: fought_the_trend | Cost: $1,154.84
+ 4. [BAD] 2021-12-24: HOLD @ $50822.20 (confidence: 40.0%) → 5d return: -8.61% | Pattern: other | Cost: $1,032.57
+ 5. [BAD] 2021-12-25: HOLD @ $50429.86 (confidence: 38.7%) → 5d return: -6.45% | Pattern: other | Cost: $773.57
+ 6. [BAD] 2021-12-23: HOLD @ $50784.54 (confidence: 39.6%) → 5d return: -6.29% | Pattern: other | Cost: $722.34
+ 7. [BAD] 2021-11-27: BUY @ $54815.08 (confidence: 35.0%) → 5d return: +3.03% | Pattern: fought_the_trend | Cost: $605.83
+ 8. [BAD] 2021-11-24: BUY @ $56280.43 (confidence: 36.0%) → 5d return: +2.71% | Pattern: fought_the_trend | Cost: $542.22
+
+================================================================================
+

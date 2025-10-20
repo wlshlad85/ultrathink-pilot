@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraThink Test Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card .label {
+            color: #718096;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card.total .value { color: #4299e1; }
+        .stat-card.passed .value { color: #48bb78; }
+        .stat-card.failed .value { color: #f56565; }
+        .stat-card.success-rate .value { color: #667eea; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            transition: width 0.5s ease;
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .test-section h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .test-file {
+            margin-bottom: 25px;
+        }
+
+        .test-file h3 {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-badge {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        .test-list {
+            list-style: none;
+        }
+
+        .test-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .test-item:hover {
+            transform: translateX(5px);
+        }
+
+        .test-item.passed {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+        }
+
+        .test-item.failed {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+        }
+
+        .test-name {
+            flex: 1;
+            color: #2d3748;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .test-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-badge.passed {
+            background: #48bb78;
+            color: white;
+        }
+
+        .status-badge.failed {
+            background: #f56565;
+            color: white;
+        }
+
+        .duration {
+            color: #718096;
+            font-size: 0.85rem;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card, .test-section {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UltraThink Test Dashboard</h1>
+            <p class="subtitle">Generated on 2025-10-15 20:48:48</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="label">Total Tests</div>
+                <div class="value">45</div>
+            </div>
+
+            <div class="stat-card passed">
+                <div class="label">Passed</div>
+                <div class="value">40</div>
+            </div>
+
+            <div class="stat-card failed">
+                <div class="label">Failed</div>
+                <div class="value">5</div>
+            </div>
+
+            <div class="stat-card success-rate">
+                <div class="label">Success Rate</div>
+                <div class="value">88.9%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 88.88888888888889%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="test-section">
+            <h2>Test Results by Module</h2>
+            <div class="test-file">
+                <h3>tests/test_agents.py <span class="file-badge">0/5 passed</span></h3>
+                <ul class="test-list">
+                    <li class="test-item failed">
+                        <span class="test-name">test_agent_pipeline_matches_fixture[/home/rich/ultrathink-pilot/tests/agentic/basic/test_001.yaml]</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge failed">failed</span>
+                        </div>
+                    </li>
+                    <li class="test-item failed">
+                        <span class="test-name">test_agent_pipeline_matches_fixture[/home/rich/ultrathink-pilot/tests/agentic/basic/test_002.yaml]</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge failed">failed</span>
+                        </div>
+                    </li>
+                    <li class="test-item failed">
+                        <span class="test-name">test_agent_pipeline_matches_fixture[/home/rich/ultrathink-pilot/tests/agentic/basic/test_003.yaml]</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge failed">failed</span>
+                        </div>
+                    </li>
+                    <li class="test-item failed">
+                        <span class="test-name">test_agent_pipeline_matches_fixture[/home/rich/ultrathink-pilot/tests/agentic/basic/test_004.yaml]</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge failed">failed</span>
+                        </div>
+                    </li>
+                    <li class="test-item failed">
+                        <span class="test-name">test_agent_pipeline_matches_fixture[/home/rich/ultrathink-pilot/tests/agentic/basic/test_005.yaml]</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge failed">failed</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="test-file">
+                <h3>tests/test_backtesting.py <span class="file-badge">20/20 passed</span></h3>
+                <ul class="test-list">
+                    <li class="test-item passed">
+                        <span class="test-name">TestDataFetcher::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestDataFetcher::test_fetch_data</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestDataFetcher::test_add_technical_indicators</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestDataFetcher::test_get_market_context</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_buy_execution</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_sell_execution</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_hold_execution</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_insufficient_capital</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_sell_without_position</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_commission_applied</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPortfolio::test_equity_recording</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPerformanceMetrics::test_sharpe_ratio_calculation</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPerformanceMetrics::test_max_drawdown_calculation</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPerformanceMetrics::test_volatility_calculation</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPerformanceMetrics::test_var_calculation</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPerformanceMetrics::test_get_all_metrics</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestBacktestEngine::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestBacktestEngine::test_load_data</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestBacktestEngine::test_create_fixture_from_context</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="test-file">
+                <h3>tests/test_rl.py <span class="file-badge">20/20 passed</span></h3>
+                <ul class="test-list">
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_reset</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_step_hold</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_step_buy</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_step_sell</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_episode_completion</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_observation_bounds</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestTradingEnv::test_reward_calculation</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestActorCritic::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestActorCritic::test_forward_pass</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestActorCritic::test_act_method</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestActorCritic::test_evaluate_method</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_initialization</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_cuda_detection</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_select_action</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_store_reward_and_terminal</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_update_policy</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestPPOAgent::test_save_and_load</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestRLIntegration::test_agent_environment_interaction</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                    <li class="test-item passed">
+                        <span class="test-name">TestRLIntegration::test_training_loop</span>
+                        <div class="test-status">
+                            <span class="duration"></span>
+                            <span class="status-badge passed">passed</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="success-icon">⚠️</div>
+            <h2>5 Test(s) Failed</h2>
+            <p>Please review and fix failing tests.</p>
+        </div>
+
+    </div>
+</body>
+</html>

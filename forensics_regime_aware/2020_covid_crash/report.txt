@@ -1,0 +1,53 @@
+
+================================================================================
+TRADE FORENSICS REPORT: 2020-03-22 to 2020-05-29
+================================================================================
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Decisions:       69
+  HOLD:                38 (55.1%)
+  BUY:                 31 (44.9%)
+  SELL:                0 (0.0%)
+
+FAILURE ANALYSIS
+--------------------------------------------------------------------------------
+Bad Decisions:         7 (10.1%)
+Total Cost:            $10,291.20
+Avg Cost per Failure:  $1,470.17
+
+FAILURE PATTERNS (by frequency)
+--------------------------------------------------------------------------------
+  momentum_misread         :    4 ( 57.1%) - Cost: $5,357.43
+  high_volatility_mistake  :    1 ( 14.3%) - Cost: $2,315.36
+
+PERFORMANCE BY MARKET REGIME
+--------------------------------------------------------------------------------
+
+  BEAR Market:
+    Decisions:        37
+    Bad Decisions:    0 (0.0%)
+    Cost:             $0.00
+
+  NEUTRAL Market:
+    Decisions:        10
+    Bad Decisions:    1 (10.0%)
+    Cost:             $1,442.41
+
+  BULL Market:
+    Decisions:        22
+    Bad Decisions:    6 (27.3%)
+    Cost:             $8,848.79
+
+TOP 10 MOST COSTLY MISTAKES
+--------------------------------------------------------------------------------
+ 1. [BAD] 2020-05-07: BUY @ $9951.52 (confidence: 81.8%) → 5d return: -11.53% | Pattern: high_volatility_mistake | Cost: $2,315.36
+ 2. [BAD] 2020-05-19: BUY @ $9729.04 (confidence: 88.8%) → 5d return: -9.65% | Pattern: momentum_misread | Cost: $1,954.77
+ 3. [BAD] 2020-05-06: BUY @ $9268.76 (confidence: 68.0%) → 5d return: -7.20% | Pattern: other | Cost: $1,442.41
+ 4. [BAD] 2020-05-20: BUY @ $9522.98 (confidence: 86.2%) → 5d return: -6.47% | Pattern: momentum_misread | Cost: $1,310.73
+ 5. [BAD] 2020-05-08: BUY @ $9842.67 (confidence: 84.5%) → 5d return: -5.82% | Pattern: other | Cost: $1,176.00
+ 6. [BAD] 2020-05-18: BUY @ $9726.58 (confidence: 88.3%) → 5d return: -5.32% | Pattern: momentum_misread | Cost: $1,076.28
+ 7. [BAD] 2020-05-17: BUY @ $9670.74 (confidence: 88.9%) → 5d return: -5.05% | Pattern: momentum_misread | Cost: $1,015.65
+
+================================================================================
+

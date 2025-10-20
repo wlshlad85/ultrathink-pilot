@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/rich/ultrathink-pilot/backtesting/**)",
+      "Read(//home/rich/ultrathink-pilot/agents/**)",
+      "Read(//home/rich/ultrathink-pilot/**)",
+      "Bash(cat run_all_tests.sh)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

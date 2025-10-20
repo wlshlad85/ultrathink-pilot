@@ -1,1 +1,11 @@
-# Orchestration run report (with metrics)\n\nRun at: 2025-10-15T15:07:12Z\n\n## Summary metrics\n\n- count: 5\n- mr_p50_ms: 48\n- ers_p50_ms: 34\n- mr_p95_ms: 48\n- ers_p95_ms: 34\n- decisions: {'veto': 2, 'approve': 3}\n- estimated_token_in: 0\n- estimated_token_out: 0\n- estimated_cost_gbp: 0.0\n\n## Per-fixture results\n\n| fixture | decision | mr_ms | ers_ms | reasons |\n|---|---:|---:|---:|---|\n| test_001.yaml | approve | 49 | 34 | no policy triggers, approved |\n| test_002.yaml | approve | 46 | 36 | no policy triggers, approved |\n| test_003.yaml | veto | 47 | 34 | risk_percent 3.5 > 2.0 |\n| test_004.yaml | veto | 48 | 34 | stop_loss 0.5 < 1.2 * atr14 (0.72) |\n| test_005.yaml | approve | 48 | 33 | stop_loss 1.2 >= 1.2 * atr14 (1.2) |\n
+# Orchestration run report
+
+Run at: 2025-10-16T13:54:22.764664Z
+
+| fixture | decision | reasons |
+|---|---|---|
+| test_001.yaml | error | Command 'python agents/mr_sr.py --fixture "\\wsl.localhost\Ubuntu\home\rich\ultrathink-pilot\tests\agentic\basic\test_001.yaml" --asset BTC-USD --out "\tmp\ultrathink_orch\mr_test_001.yaml.json"' returned non-zero exit status 2. |
+| test_002.yaml | error | Command 'python agents/mr_sr.py --fixture "\\wsl.localhost\Ubuntu\home\rich\ultrathink-pilot\tests\agentic\basic\test_002.yaml" --asset BTC-USD --out "\tmp\ultrathink_orch\mr_test_002.yaml.json"' returned non-zero exit status 2. |
+| test_003.yaml | error | Command 'python agents/mr_sr.py --fixture "\\wsl.localhost\Ubuntu\home\rich\ultrathink-pilot\tests\agentic\basic\test_003.yaml" --asset BTC-USD --out "\tmp\ultrathink_orch\mr_test_003.yaml.json"' returned non-zero exit status 2. |
+| test_004.yaml | error | Command 'python agents/mr_sr.py --fixture "\\wsl.localhost\Ubuntu\home\rich\ultrathink-pilot\tests\agentic\basic\test_004.yaml" --asset BTC-USD --out "\tmp\ultrathink_orch\mr_test_004.yaml.json"' returned non-zero exit status 2. |
+| test_005.yaml | error | Command 'python agents/mr_sr.py --fixture "\\wsl.localhost\Ubuntu\home\rich\ultrathink-pilot\tests\agentic\basic\test_005.yaml" --asset BTC-USD --out "\tmp\ultrathink_orch\mr_test_005.yaml.json"' returned non-zero exit status 2. |

@@ -1,0 +1,38 @@
+BITCOIN REGIME LABELING STATISTICS
+================================================================================
+
+Symbol: BTC-USD
+Period: 2017-01-01 to 2024-12-31
+Total Days: 2921
+Generated: 2025-10-17 12:23:33
+
+REGIME DISTRIBUTION
+--------------------------------------------------------------------------------
+BULL           :  1468 days ( 50.26%)
+BEAR           :   980 days ( 33.55%)
+SIDEWAYS       :   473 days ( 16.19%)
+
+REGIME DURATION STATISTICS
+--------------------------------------------------------------------------------
+Average:  32.46 days
+Median:   24.00 days
+Min:      5 days
+Max:      209 days
+
+PERFORMANCE BY REGIME
+--------------------------------------------------------------------------------
+
+BULL:
+  Avg Daily Return:  +0.5907%
+  Daily Volatility:   3.7420%
+  Sharpe Ratio:        3.016
+
+BEAR:
+  Avg Daily Return:  -0.2389%
+  Daily Volatility:   4.2020%
+  Sharpe Ratio:       -1.086
+
+SIDEWAYS:
+  Avg Daily Return:  +0.0566%
+  Daily Volatility:   2.4205%
+  Sharpe Ratio:        0.447

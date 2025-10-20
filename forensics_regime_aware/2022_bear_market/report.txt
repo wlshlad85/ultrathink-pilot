@@ -1,0 +1,50 @@
+
+================================================================================
+TRADE FORENSICS REPORT: 2022-04-02 to 2022-12-29
+================================================================================
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Decisions:       272
+  HOLD:                266 (97.8%)
+  BUY:                 5 (1.8%)
+  SELL:                1 (0.4%)
+
+FAILURE ANALYSIS
+--------------------------------------------------------------------------------
+Bad Decisions:         5 (1.8%)
+Total Cost:            $8,770.05
+Avg Cost per Failure:  $1,754.01
+
+FAILURE PATTERNS (by frequency)
+--------------------------------------------------------------------------------
+  momentum_misread         :    1 ( 20.0%) - Cost: $865.23
+
+PERFORMANCE BY MARKET REGIME
+--------------------------------------------------------------------------------
+
+  BULL Market:
+    Decisions:        8
+    Bad Decisions:    4 (50.0%)
+    Cost:             $7,904.82
+
+  NEUTRAL Market:
+    Decisions:        48
+    Bad Decisions:    1 (2.1%)
+    Cost:             $865.23
+
+  BEAR Market:
+    Decisions:        216
+    Bad Decisions:    0 (0.0%)
+    Cost:             $0.00
+
+TOP 10 MOST COSTLY MISTAKES
+--------------------------------------------------------------------------------
+ 1. [BAD] 2022-11-05: BUY @ $21282.69 (confidence: 71.9%) → 5d return: -17.37% | Pattern: other | Cost: $3,432.34
+ 2. [BAD] 2022-04-03: BUY @ $46453.57 (confidence: 75.7%) → 5d return: -8.97% | Pattern: other | Cost: $1,793.56
+ 3. [BAD] 2022-04-04: BUY @ $46622.68 (confidence: 76.4%) → 5d return: -8.24% | Pattern: other | Cost: $1,647.68
+ 4. [BAD] 2022-04-02: BUY @ $45868.95 (confidence: 56.8%) → 5d return: -5.16% | Pattern: other | Cost: $1,031.24
+ 5. [BAD] 2022-08-12: BUY @ $24402.82 (confidence: 64.8%) → 5d return: -4.37% | Pattern: momentum_misread | Cost: $865.23
+
+================================================================================
+

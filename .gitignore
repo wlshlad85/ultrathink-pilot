@@ -10,3 +10,8 @@ tmp/
 *.log
 # OS files
 .DS_Store
+.env
+
+
+#Ignore cursor AI rules
+.cursor\rules\codacy.mdc

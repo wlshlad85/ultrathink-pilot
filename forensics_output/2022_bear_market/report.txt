@@ -1,0 +1,57 @@
+
+================================================================================
+TRADE FORENSICS REPORT: 2022-04-02 to 2022-12-29
+================================================================================
+
+OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Decisions:       272
+  HOLD:                218 (80.1%)
+  BUY:                 45 (16.5%)
+  SELL:                9 (3.3%)
+
+FAILURE ANALYSIS
+--------------------------------------------------------------------------------
+Bad Decisions:         26 (9.6%)
+Total Cost:            $44,841.48
+Avg Cost per Failure:  $1,724.67
+
+FAILURE PATTERNS (by frequency)
+--------------------------------------------------------------------------------
+  fought_the_trend         :   11 ( 42.3%) - Cost: $27,935.62
+  caught_falling_knife     :    3 ( 11.5%) - Cost: $5,706.43
+  high_volatility_mistake  :    1 (  3.8%) - Cost: $537.81
+
+PERFORMANCE BY MARKET REGIME
+--------------------------------------------------------------------------------
+
+  BULL Market:
+    Decisions:        8
+    Bad Decisions:    0 (0.0%)
+    Cost:             $0.00
+
+  NEUTRAL Market:
+    Decisions:        48
+    Bad Decisions:    11 (22.9%)
+    Cost:             $10,502.34
+
+  BEAR Market:
+    Decisions:        216
+    Bad Decisions:    15 (6.9%)
+    Cost:             $34,339.13
+
+TOP 10 MOST COSTLY MISTAKES
+--------------------------------------------------------------------------------
+ 1. [BAD] 2022-06-11: BUY @ $28360.81 (confidence: 34.9%) → 5d return: -28.13% | Pattern: fought_the_trend | Cost: $5,500.35
+ 2. [BAD] 2022-06-12: BUY @ $26762.65 (confidence: 36.3%) → 5d return: -23.51% | Pattern: fought_the_trend | Cost: $4,593.39
+ 3. [BAD] 2022-05-06: BUY @ $36040.92 (confidence: 35.6%) → 5d return: -19.71% | Pattern: fought_the_trend | Cost: $3,917.38
+ 4. [BAD] 2022-05-07: BUY @ $35501.95 (confidence: 34.0%) → 5d return: -18.18% | Pattern: fought_the_trend | Cost: $3,608.33
+ 5. [BAD] 2022-05-05: BUY @ $36575.14 (confidence: 37.0%) → 5d return: -15.18% | Pattern: fought_the_trend | Cost: $3,035.84
+ 6. [BAD] 2022-06-13: BUY @ $22487.39 (confidence: 37.8%) → 5d return: -15.43% | Pattern: caught_falling_knife | Cost: $3,009.97
+ 7. [BAD] 2022-05-08: BUY @ $34059.27 (confidence: 36.5%) → 5d return: -14.02% | Pattern: fought_the_trend | Cost: $2,779.40
+ 8. [BAD] 2022-11-08: BUY @ $18541.27 (confidence: 38.3%) → 5d return: -11.80% | Pattern: fought_the_trend | Cost: $2,304.62
+ 9. [BAD] 2022-08-23: BUY @ $21528.09 (confidence: 35.6%) → 5d return: -8.88% | Pattern: other | Cost: $1,735.25
+10. [BAD] 2022-06-15: BUY @ $22572.84 (confidence: 35.5%) → 5d return: -8.74% | Pattern: caught_falling_knife | Cost: $1,694.04
+
+================================================================================
+
