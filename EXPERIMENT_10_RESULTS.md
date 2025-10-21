@@ -275,6 +275,7 @@ The bug was fixed in train_professional.py (lines 373, 433). The policy returns 
 **Reproducibility:**
 - All metrics stored in ml_experiments.db
 - Git commit: 89d213679cbb573c768c1b6dda02883e8f5d4139
+
 - Checkpoint files preserved
 - Analysis code in Jupyter notebook
 

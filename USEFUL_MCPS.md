@@ -286,21 +286,37 @@ claude mcp add alphavantage \
 
 ## 🧪 Research & Development
 
-### 9. Hugging Face MCP (ML Research)
+### 9. ✅ Hugging Face MCP (ML Research) - INSTALLED
 
 **What it does**: Browse ML models, datasets, and research papers
 
+**Status**: ✓ Connected (v0.2.32)
+
 **Installation**:
 ```bash
-claude mcp add huggingface -- npx -y @huggingface/mcp-server
+# Correct package (tested and working!)
+claude mcp add huggingface -- cmd /c npx -y @llmindset/hf-mcp-server
 ```
 
+**Features**:
+- 11 out of 13 tools enabled
+- Access to Hugging Face models, datasets, and papers
+- STDIO transport with API polling
+- Internal API client for user configs
+
+**Key Resources Found**:
+- **CryptoTrader-LM**: BTC/ETH trading model (2022-2024 data)
+- **Stock-trading-rl-agent**: PPO implementation
+- **Financial-news-multisource**: 47M+ rows dataset
+- **CryptoBERT**: Sentiment analysis models
+- **Papers**: Meta-RL-Crypto, FLAG-Trader, Fin-R1
+
 **Use cases**:
-- Find state-of-art RL models
-- Access RL benchmark datasets
-- Research latest RL papers
-- Compare architectures
-- Find pre-trained models
+- Find state-of-art RL models ✅
+- Access RL benchmark datasets ✅
+- Research latest RL papers ✅
+- Compare architectures ✅
+- Find pre-trained models ✅
 
 **Example queries**:
 ```
@@ -309,6 +325,8 @@ claude mcp add huggingface -- npx -y @huggingface/mcp-server
 "Search for Bitcoin trading datasets"
 "What's the state-of-art in crypto RL trading?"
 ```
+
+**See Also**: `HUGGINGFACE_RL_RESOURCES.md` for detailed research summary
 
 **Authentication**: Optional (Hugging Face account for more access)
 
@@ -364,13 +382,14 @@ Use `@` to reference MCP resources:
 
 ### Current Installation Status
 
-✅ **All Installed & Working** (6/9 from recommended list):
+✅ **All Installed & Working** (7/9 from recommended list):
 - ccxt (Cryptocurrency data)
 - sqlite (Database queries)
 - pandas (Data analysis with pandas)
 - github (Version control & PRs)
 - jupyter (Interactive notebooks)
 - playwright (Browser automation)
+- huggingface (ML research - models, datasets, papers)
 
 ---
 
@@ -393,7 +412,7 @@ For your Bitcoin RL trading project, install in this order:
 
 **Week 4** (Deployment):
 8. Freqtrade - Paper trading
-9. Hugging Face - Research improvements
+9. ✅ Hugging Face - Already done!
 
 ---
 
