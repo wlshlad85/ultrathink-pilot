@@ -286,11 +286,11 @@ claude mcp add alphavantage \
 
 ## 🧪 Research & Development
 
-### 9. ✅ Hugging Face MCP (ML Research) - INSTALLED
+### 9. ✅ Hugging Face MCP (ML Research) - INSTALLED + PYTHON INTEGRATION
 
 **What it does**: Browse ML models, datasets, and research papers
 
-**Status**: ✓ Connected (v0.2.32)
+**Status**: ✓ Connected (v0.2.32) + Python wrapper available
 
 **Installation**:
 ```bash
@@ -303,6 +303,7 @@ claude mcp add huggingface -- cmd /c npx -y @llmindset/hf-mcp-server
 - Access to Hugging Face models, datasets, and papers
 - STDIO transport with API polling
 - Internal API client for user configs
+- **NEW**: Python integration via `tools/huggingface_mcp.py`
 
 **Key Resources Found**:
 - **CryptoTrader-LM**: BTC/ETH trading model (2022-2024 data)
@@ -317,8 +318,11 @@ claude mcp add huggingface -- cmd /c npx -y @llmindset/hf-mcp-server
 - Research latest RL papers ✅
 - Compare architectures ✅
 - Find pre-trained models ✅
+- **NEW**: Programmatic Python access ✅
+- **NEW**: Sentiment analysis integration ✅
+- **NEW**: Backtest enrichment ✅
 
-**Example queries**:
+**Example queries (Claude Code)**:
 ```
 "Find latest RL papers on financial trading"
 "Show me PPO implementations on Hugging Face"
@@ -326,7 +330,33 @@ claude mcp add huggingface -- cmd /c npx -y @llmindset/hf-mcp-server
 "What's the state-of-art in crypto RL trading?"
 ```
 
-**See Also**: `HUGGINGFACE_RL_RESOURCES.md` for detailed research summary
+**Example usage (Python)**:
+```python
+from tools.huggingface_mcp import HuggingFaceClient, HFTradingResearch
+
+# Search models
+client = HuggingFaceClient()
+models = client.search_models("bitcoin trading PPO", limit=5)
+
+# Research assistant
+research = HFTradingResearch()
+report = research.generate_research_report()
+print(report["recommendations"])
+
+# Add sentiment to backtests
+from tools.huggingface_mcp import HFDataEnricher
+enricher = HFDataEnricher()
+enriched_context = enricher.enrich_market_context(context, news_items)
+```
+
+**Documentation**:
+- `HUGGINGFACE_MCP.md` - Complete integration guide
+- `HUGGINGFACE_RL_RESOURCES.md` - Research findings
+- `RESEARCH_PAPERS_HUGGINGFACE.md` - Paper summaries
+- `tools/huggingface_mcp.py` - Python integration code
+- `download_cryptotrader_lm.py` - Model download example
+
+**Policy**: Registered in `policy/tools.yaml` (Class A: read-only, Class B: download)
 
 **Authentication**: Optional (Hugging Face account for more access)
 
@@ -388,8 +418,8 @@ Use `@` to reference MCP resources:
 - pandas (Data analysis with pandas)
 - github (Version control & PRs)
 - jupyter (Interactive notebooks)
-- playwright (Browser automation)
-- huggingface (ML research - models, datasets, papers)
+- playwright (Browser automation + Python wrapper)
+- huggingface (ML research + **Python integration tool**)
 
 ---
 

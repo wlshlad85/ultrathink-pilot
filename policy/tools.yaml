@@ -52,5 +52,41 @@ tools:
     timeout_sec: 2
     description: "Send alerts to Ops/SRE channels (non-blocking)."
 
+  hf_search_models:
+    class: A
+    timeout_sec: 15
+    description: "Search Hugging Face for ML models (RL, sentiment, trading)."
+    rate_limit_per_minute: 10
+
+  hf_search_datasets:
+    class: A
+    timeout_sec: 15
+    description: "Search Hugging Face for datasets (financial, crypto, time-series)."
+    rate_limit_per_minute: 10
+
+  hf_search_papers:
+    class: A
+    timeout_sec: 15
+    description: "Search Hugging Face for research papers on RL and trading."
+    rate_limit_per_minute: 10
+
+  hf_sentiment_analysis:
+    class: A
+    timeout_sec: 10
+    description: "Analyze sentiment of financial/crypto news using HF models."
+    rate_limit_per_minute: 30
+
+  hf_model_info:
+    class: A
+    timeout_sec: 10
+    description: "Get detailed metadata about a specific HF model."
+    rate_limit_per_minute: 20
+
+  hf_download_model:
+    class: B
+    timeout_sec: 60
+    description: "Download ML model from Hugging Face to local storage (sandbox)."
+    rate_limit_per_minute: 2
+
 # Default timeout for any unlisted tool (fail closed)
 default_timeout_sec: 10
