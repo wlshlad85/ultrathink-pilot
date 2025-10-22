@@ -19,6 +19,7 @@ openai==2.3.0
 packaging==25.0
 pandas==2.3.3
 peewee==3.18.2
+psycopg[binary]==3.2.3
 platformdirs==4.5.0
 pluggy==1.6.0
 protobuf==6.32.1
