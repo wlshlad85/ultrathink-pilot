@@ -1,0 +1,130 @@
+# AlertManager Configuration for UltraThink Pilot
+# This configuration routes alerts to Slack based on severity
+
+global:
+  # Global configuration
+  resolve_timeout: 5m
+  # Slack API URL (set via environment variable SLACK_WEBHOOK_URL)
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+# Templates for alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree for alert routing
+route:
+  # Default receiver for all alerts
+  receiver: 'slack-warnings'
+
+  # Group alerts by these labels
+  group_by: ['alertname', 'cluster', 'service', 'severity']
+
+  # How long to wait before sending initial notification
+  group_wait: 30s
+
+  # How long to wait before sending notification about new alerts added to group
+  group_interval: 5m
+
+  # How long to wait before re-sending a notification
+  repeat_interval: 4h
+
+  # Child routes
+  routes:
+    # Critical alerts - route to on-call and Slack critical channel
+    - match:
+        severity: critical
+      receiver: 'slack-critical'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+      continue: true  # Also send to default receiver
+
+    # Warning alerts - route to Slack warnings channel
+    - match:
+        severity: warning
+      receiver: 'slack-warnings'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    # Infrastructure alerts - route to ops channel
+    - match:
+        component: infrastructure
+      receiver: 'slack-ops'
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 12h
+
+# Inhibition rules - suppress certain alerts when others are firing
+inhibit_rules:
+  # Suppress warning alerts if critical alert for same service is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service', 'instance']
+
+  # Suppress downstream service alerts if upstream service is down
+  - source_match:
+      alertname: 'DataPipelineFailure'
+    target_match_re:
+      alertname: '(ModelServingDown|InferenceServiceDown)'
+    equal: ['cluster']
+
+# Alert receivers configuration
+receivers:
+  # Critical alerts - sent to dedicated Slack channel with high visibility
+  - name: 'slack-critical'
+    slack_configs:
+      - channel: '#ultrathink-alerts-critical'
+        username: 'UltraThink AlertManager'
+        icon_emoji: ':rotating_light:'
+        title: ':red_circle: CRITICAL ALERT: {{ .GroupLabels.alertname }}'
+        title_link: '{{ template "slack.default.titlelink" . }}'
+        text: |-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Component:* {{ .Labels.component }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          *Dashboard:* {{ .Annotations.dashboard }}
+          *Status:* {{ .Status }}
+          {{ end }}
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # Warning alerts - sent to general alerts Slack channel
+  - name: 'slack-warnings'
+    slack_configs:
+      - channel: '#ultrathink-alerts'
+        username: 'UltraThink AlertManager'
+        icon_emoji: ':warning:'
+        title: ':large_orange_diamond: WARNING: {{ .GroupLabels.alertname }}'
+        title_link: '{{ template "slack.default.titlelink" . }}'
+        text: |-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+
+  # Infrastructure/ops alerts - sent to ops channel
+  - name: 'slack-ops'
+    slack_configs:
+      - channel: '#ultrathink-ops'
+        username: 'UltraThink AlertManager'
+        icon_emoji: ':gear:'
+        title: ':large_blue_diamond: Infrastructure Alert: {{ .GroupLabels.alertname }}'
+        text: |-
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Details:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+
+# Configuration for alert silencing and muting
+# Silences can be managed via the AlertManager UI at http://alertmanager:9093

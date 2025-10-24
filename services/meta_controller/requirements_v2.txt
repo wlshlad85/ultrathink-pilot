@@ -1,0 +1,24 @@
+# Meta-Controller Service v2.0 Dependencies
+# Updated for hierarchical RL with FastAPI
+
+# Deep Learning - PyTorch with CUDA support
+torch>=2.0.0
+numpy>=1.24.0,<2.0.0
+
+# FastAPI for REST API
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+requests==2.31.0
+
+# Database - PostgreSQL/TimescaleDB
+psycopg2-binary==2.9.9
+
+# Utilities
+python-dateutil==2.8.2
+
+# Testing (optional, for local development)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.1  # For testing FastAPI

@@ -1,0 +1,17 @@
+# Meta-Controller Service Dependencies
+# Deep Learning - Using PyTorch Nightly for RTX 5070 (sm_120) support
+# Install with: pip install torch --index-url https://download.pytorch.org/whl/nightly/cu121
+torch>=2.10.0.dev
+numpy==1.24.3
+
+# Kafka Integration
+kafka-python==2.0.2
+
+# Redis for Model Caching
+redis==5.0.0
+
+# MLflow for Experiment Tracking
+mlflow==2.8.0
+
+# Utilities
+python-dateutil==2.8.2

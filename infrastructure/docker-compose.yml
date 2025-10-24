@@ -1,0 +1,497 @@
+services:
+  # TimescaleDB - Time-series database for experiment tracking
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: ultrathink-timescaledb
+    environment:
+      POSTGRES_DB: ultrathink_experiments
+      POSTGRES_USER: ultrathink
+      POSTGRES_PASSWORD: changeme_in_production
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./timescale_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    command: postgres -c shared_preload_libraries=timescaledb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ultrathink"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ultrathink-network
+
+  # MLflow - Experiment tracking and model registry
+  mlflow:
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile
+    container_name: ultrathink-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://ultrathink:changeme_in_production@timescaledb:5432/mlflow_tracking
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlflow/artifacts
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://ultrathink:changeme_in_production@timescaledb:5432/mlflow_tracking
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ultrathink-network
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ultrathink-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - alertmanager
+    networks:
+      - ultrathink-network
+
+  # AlertManager - Alert routing and notification
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: ultrathink-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    environment:
+      # Set this in .env file: SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    networks:
+      - ultrathink-network
+    restart: unless-stopped
+
+  # Grafana - Visualization and dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ultrathink-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - ultrathink-network
+
+  # Redis - Feature caching (Phase 2)
+  redis:
+    image: redis:7-alpine
+    container_name: ultrathink-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ultrathink-network
+
+  # Zookeeper - Kafka cluster coordination
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ultrathink-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 5
+      ZOOKEEPER_4LW_COMMANDS_WHITELIST: "srvr,ruok"
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "echo srvr | nc localhost 2181 | grep Mode"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ultrathink-network
+
+  # Kafka Broker 1
+  kafka-1:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ultrathink-kafka-1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ultrathink-network
+
+  # Kafka Broker 2
+  kafka-2:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ultrathink-kafka-2
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9093:9093"
+      - "19093:19093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9093,PLAINTEXT_HOST://localhost:19093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9093"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ultrathink-network
+
+  # Kafka Broker 3
+  kafka-3:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ultrathink-kafka-3
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9094:9094"
+      - "19094:19094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9094,PLAINTEXT_HOST://localhost:19094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9094"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ultrathink-network
+
+  # Data Service - Feature engineering API
+  data-service:
+    build: ../services/data_service
+    container_name: ultrathink-data-service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - ultrathink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Regime Detection Service - Probabilistic DPGMM market regime classifier
+  regime-detection:
+    build: ../services/regime_detection
+    container_name: ultrathink-regime-detection
+    ports:
+      - "8001:8001"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      TIMESCALEDB_HOST: timescaledb
+      TIMESCALEDB_PORT: 5432
+      TIMESCALEDB_DATABASE: ultrathink_experiments
+      TIMESCALEDB_USER: ultrathink
+      TIMESCALEDB_PASSWORD: changeme_in_production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - regime_models:/app/models
+    networks:
+      - ultrathink-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Meta-Controller Service - Hierarchical RL strategy selection
+  meta-controller:
+    build: ../services/meta_controller
+    container_name: ultrathink-meta-controller
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    networks:
+      - ultrathink-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Training Orchestrator - Celery-based distributed ML training
+  training-orchestrator:
+    build: ../services/training_orchestrator
+    container_name: ultrathink-training-orchestrator
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/3
+      CELERY_RESULT_BACKEND: redis://redis:6379/3
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    networks:
+      - ultrathink-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Risk Manager - Portfolio risk constraint enforcement
+  risk-manager:
+    build: ../services/risk_manager
+    container_name: ultrathink-risk-manager
+    ports:
+      - "8001:8001"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+    environment:
+      TIMESCALE_HOST: timescaledb
+      TIMESCALE_PORT: 5432
+      TIMESCALE_DB: ultrathink_experiments
+      TIMESCALE_USER: ultrathink
+      TIMESCALE_PASSWORD: changeme_in_production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - ultrathink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Inference Service - Low-latency prediction API
+  inference-service:
+    build: ../services/inference_service
+    container_name: ultrathink-inference-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      data-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+    environment:
+      MODEL_DIR: /app/models
+      MOCK_DATA_SERVICE: "false"
+      MOCK_REGIME_DETECTION: "true"
+      MOCK_META_CONTROLLER: "true"
+      MOCK_RISK_MANAGER: "true"
+      DATA_SERVICE_URL: http://data-service:8000
+      REGIME_DETECTION_URL: http://regime-detection:8001
+      META_CONTROLLER_URL: http://meta-controller:8002
+      RISK_MANAGER_URL: http://risk-manager:8003
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ../rl/models:/app/models:ro
+    networks:
+      - ultrathink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Forensics Consumer - Asynchronous trade explainability and audit logging
+  forensics-consumer:
+    build: ../services/forensics_consumer
+    container_name: ultrathink-forensics-consumer
+    ports:
+      - "8090:8090"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      TIMESCALEDB_HOST: timescaledb
+      TIMESCALEDB_PORT: 5432
+      TIMESCALEDB_DATABASE: ultrathink_experiments
+      TIMESCALEDB_USER: ultrathink
+      TIMESCALEDB_PASSWORD: changeme_in_production
+    networks:
+      - ultrathink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  ultrathink-network:
+    driver: bridge
+
+volumes:
+  timescale_data:
+  mlflow_artifacts:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
+  redis_data:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_1_data:
+  kafka_2_data:
+  kafka_3_data:
+  regime_models:

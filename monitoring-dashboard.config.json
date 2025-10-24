@@ -1,0 +1,557 @@
+{
+  "metadata": {
+    "generated": "2025-10-24",
+    "version": "1.0.0",
+    "purpose": "Real-time tracking for UltraThink Pilot deployment",
+    "master_orchestrator": "active",
+    "deputy_agent": "coordinating"
+  },
+  "agent_coordination": {
+    "status_file": "/home/rich/ultrathink-pilot/agent-coordination/status.json",
+    "update_frequency_seconds": 30,
+    "heartbeat_timeout_seconds": 300,
+    "log_directory": "/home/rich/ultrathink-pilot/agent-coordination/logs"
+  },
+  "grafana_dashboards": [
+    {
+      "name": "Agent Deployment Status",
+      "uid": "agent-deployment-status",
+      "priority": "highest",
+      "refresh": "10s",
+      "panels": [
+        {
+          "title": "Wave Progress Overview",
+          "type": "stat",
+          "datasource": "PostgreSQL",
+          "query": "SELECT wave_id, COUNT(*) as total_tasks, SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as completed FROM task_status GROUP BY wave_id",
+          "thresholds": [
+            {"color": "red", "value": 0},
+            {"color": "yellow", "value": 50},
+            {"color": "green", "value": 80}
+          ]
+        },
+        {
+          "title": "Active Agents",
+          "type": "table",
+          "datasource": "PostgreSQL",
+          "query": "SELECT agent_id, current_task, progress_percentage, eta, blockers FROM agent_status WHERE status='in_progress' ORDER BY progress_percentage ASC",
+          "refresh_interval": "30s"
+        },
+        {
+          "title": "Blocker Count by Severity",
+          "type": "bargauge",
+          "datasource": "PostgreSQL",
+          "query": "SELECT severity, COUNT(*) as count FROM blockers WHERE resolved=false GROUP BY severity",
+          "orientation": "horizontal",
+          "thresholds": [
+            {"color": "green", "value": 0},
+            {"color": "yellow", "value": 1},
+            {"color": "red", "value": 3}
+          ]
+        },
+        {
+          "title": "Task Completion Timeline",
+          "type": "graph",
+          "datasource": "PostgreSQL",
+          "query": "SELECT time_bucket('1 hour', completed_at) as time, COUNT(*) as tasks_completed FROM tasks WHERE status='completed' GROUP BY time ORDER BY time",
+          "yAxis": {"label": "Tasks Completed"},
+          "xAxis": {"label": "Time"}
+        }
+      ]
+    },
+    {
+      "name": "Training Metrics Dashboard",
+      "uid": "training-metrics",
+      "priority": "high",
+      "refresh": "30s",
+      "panels": [
+        {
+          "title": "Episode Returns (Recent 100)",
+          "type": "graph",
+          "datasource": "TimescaleDB",
+          "query": "SELECT time, value as episode_return FROM experiment_metrics WHERE metric_name='episode_return_pct' AND experiment_id=(SELECT MAX(id) FROM experiments WHERE status='running') ORDER BY time DESC LIMIT 100",
+          "yAxis": {"label": "Return (%)"},
+          "xAxis": {"label": "Episode"}
+        },
+        {
+          "title": "Rolling Sharpe Ratio (10/50/100 episodes)",
+          "type": "graph",
+          "datasource": "TimescaleDB",
+          "query": "SELECT time, AVG(value) OVER (ORDER BY time ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) as sharpe_10, AVG(value) OVER (ORDER BY time ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) as sharpe_50, AVG(value) OVER (ORDER BY time ROWS BETWEEN 99 PRECEDING AND CURRENT ROW) as sharpe_100 FROM experiment_metrics WHERE metric_name='sharpe_ratio'",
+          "legend": ["10-episode", "50-episode", "100-episode"]
+        },
+        {
+          "title": "Win Rate (%)",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT (SUM(CASE WHEN value > 0 THEN 1 ELSE 0 END)::float / COUNT(*)::float * 100) as win_rate FROM experiment_metrics WHERE metric_name='episode_return_pct' AND time > NOW() - INTERVAL '24 hours'",
+          "unit": "percent",
+          "decimals": 1
+        },
+        {
+          "title": "Episode Length Trends",
+          "type": "graph",
+          "datasource": "TimescaleDB",
+          "query": "SELECT time, value as episode_length FROM experiment_metrics WHERE metric_name='episode_length' ORDER BY time DESC LIMIT 100",
+          "yAxis": {"label": "Steps"},
+          "xAxis": {"label": "Episode"}
+        },
+        {
+          "title": "Model Performance by Regime",
+          "type": "heatmap",
+          "datasource": "TimescaleDB",
+          "query": "SELECT r.regime, AVG(m.value) as avg_return FROM regime_history r JOIN experiment_metrics m ON r.time = m.time WHERE m.metric_name='episode_return_pct' GROUP BY r.regime",
+          "colorScale": {"min": -5, "max": 5, "palette": ["red", "yellow", "green"]}
+        }
+      ]
+    },
+    {
+      "name": "System Performance Dashboard",
+      "uid": "system-performance",
+      "priority": "high",
+      "refresh": "15s",
+      "panels": [
+        {
+          "title": "GPU Utilization (%)",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "query": "nvidia_smi_utilization_gpu_ratio * 100",
+          "yAxis": {"label": "Utilization (%)", "min": 0, "max": 100},
+          "alert": {"threshold": 95, "condition": "above", "duration": "5m"}
+        },
+        {
+          "title": "GPU Memory Usage",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "query": "nvidia_smi_memory_used_bytes / nvidia_smi_memory_total_bytes * 100",
+          "yAxis": {"label": "Memory (%)", "min": 0, "max": 100},
+          "alert": {"threshold": 90, "condition": "above", "duration": "5m"}
+        },
+        {
+          "title": "CPU Usage by Container",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "query": "sum(rate(container_cpu_usage_seconds_total[5m])) by (container_name)",
+          "yAxis": {"label": "CPU Cores"},
+          "legend": "{{container_name}}"
+        },
+        {
+          "title": "Memory Consumption (Leak Detection)",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "query": "container_memory_usage_bytes{container_name=~\"ultrathink-.*\"}",
+          "yAxis": {"label": "Memory (GB)"},
+          "alert": {"threshold": "500MB/hour", "condition": "growth", "duration": "4h"}
+        },
+        {
+          "title": "Cache Hit Rate (%)",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "query": "(redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) * 100",
+          "thresholds": [
+            {"color": "red", "value": 0},
+            {"color": "yellow", "value": 80},
+            {"color": "green", "value": 90}
+          ],
+          "alert": {"threshold": 80, "condition": "below", "duration": "30m"}
+        },
+        {
+          "title": "Training Throughput (episodes/hour)",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT COUNT(*) FROM experiment_metrics WHERE metric_name='episode_return_pct' AND time > NOW() - INTERVAL '1 hour'",
+          "unit": "episodes/hour"
+        }
+      ]
+    },
+    {
+      "name": "Trading Decisions Dashboard",
+      "uid": "trading-decisions",
+      "priority": "high",
+      "refresh": "30s",
+      "panels": [
+        {
+          "title": "Action Distribution",
+          "type": "piechart",
+          "datasource": "TimescaleDB",
+          "query": "SELECT action, COUNT(*) as count FROM trading_decisions WHERE time > NOW() - INTERVAL '24 hours' GROUP BY action",
+          "legend": ["BUY", "HOLD", "SELL"]
+        },
+        {
+          "title": "Portfolio Value Over Time",
+          "type": "graph",
+          "datasource": "TimescaleDB",
+          "query": "SELECT time, portfolio_value FROM trading_decisions ORDER BY time",
+          "yAxis": {"label": "Portfolio Value ($)"},
+          "xAxis": {"label": "Time"}
+        },
+        {
+          "title": "P&L per Trade (Distribution)",
+          "type": "histogram",
+          "datasource": "TimescaleDB",
+          "query": "SELECT pnl FROM trading_decisions WHERE action IN ('SELL') AND time > NOW() - INTERVAL '7 days'",
+          "xAxis": {"label": "P&L ($)"},
+          "yAxis": {"label": "Frequency"}
+        },
+        {
+          "title": "Trade Frequency (trades/hour)",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT COUNT(*) FROM trading_decisions WHERE action IN ('BUY', 'SELL') AND time > NOW() - INTERVAL '1 hour'",
+          "unit": "trades/hour"
+        },
+        {
+          "title": "Average Holding Period",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT AVG(EXTRACT(EPOCH FROM (sell_time - buy_time))/3600) as avg_hours FROM trading_decisions WHERE action='SELL' AND time > NOW() - INTERVAL '7 days'",
+          "unit": "hours",
+          "decimals": 1
+        },
+        {
+          "title": "Regime Probability Distribution",
+          "type": "graph",
+          "datasource": "TimescaleDB",
+          "query": "SELECT time, prob_bull, prob_bear, prob_sideways FROM regime_history ORDER BY time DESC LIMIT 1000",
+          "yAxis": {"label": "Probability", "min": 0, "max": 1},
+          "legend": ["Bull", "Bear", "Sideways"]
+        }
+      ]
+    },
+    {
+      "name": "Risk Management Dashboard",
+      "uid": "risk-management",
+      "priority": "critical",
+      "refresh": "10s",
+      "panels": [
+        {
+          "title": "Position Concentration (%)",
+          "type": "bargauge",
+          "datasource": "TimescaleDB",
+          "query": "SELECT symbol, (position_value / portfolio_total_value) * 100 as concentration FROM current_positions ORDER BY concentration DESC",
+          "orientation": "horizontal",
+          "thresholds": [
+            {"color": "green", "value": 0},
+            {"color": "yellow", "value": 20},
+            {"color": "red", "value": 25}
+          ],
+          "alert": {"threshold": 23, "condition": "above", "severity": "critical"}
+        },
+        {
+          "title": "Portfolio VaR (95%, 1-day)",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT var_95_1d FROM portfolio_risk_metrics ORDER BY time DESC LIMIT 1",
+          "unit": "$",
+          "decimals": 0
+        },
+        {
+          "title": "Risk Limit Violations (Last 24h)",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT COUNT(*) FROM risk_checks WHERE approved=false AND time > NOW() - INTERVAL '24 hours'",
+          "thresholds": [
+            {"color": "green", "value": 0},
+            {"color": "red", "value": 1}
+          ],
+          "alert": {"threshold": 1, "condition": "above", "severity": "critical"}
+        },
+        {
+          "title": "Correlation Matrix (Top 10 Positions)",
+          "type": "heatmap",
+          "datasource": "TimescaleDB",
+          "query": "SELECT symbol1, symbol2, correlation FROM correlation_matrix WHERE time = (SELECT MAX(time) FROM correlation_matrix)",
+          "colorScale": {"min": -1, "max": 1, "palette": ["red", "white", "green"]}
+        },
+        {
+          "title": "Daily Loss Limit Utilization",
+          "type": "gauge",
+          "datasource": "TimescaleDB",
+          "query": "SELECT (current_loss / daily_loss_limit) * 100 FROM portfolio_risk_metrics ORDER BY time DESC LIMIT 1",
+          "min": 0,
+          "max": 100,
+          "thresholds": [
+            {"color": "green", "value": 0},
+            {"color": "yellow", "value": 75},
+            {"color": "red", "value": 90}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forensics & Audit Trail",
+      "uid": "forensics-audit",
+      "priority": "medium",
+      "refresh": "60s",
+      "panels": [
+        {
+          "title": "Forensics Consumer Lag",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "query": "kafka_consumer_lag{topic=\"trading-decisions\"}",
+          "unit": "events",
+          "thresholds": [
+            {"color": "green", "value": 0},
+            {"color": "yellow", "value": 10000},
+            {"color": "red", "value": 50000}
+          ],
+          "alert": {"threshold": 50000, "condition": "above", "duration": "10m"}
+        },
+        {
+          "title": "Event Processing Rate",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "query": "rate(kafka_consumer_records_consumed_total{topic=\"trading-decisions\"}[5m])",
+          "yAxis": {"label": "Events/sec"},
+          "xAxis": {"label": "Time"}
+        },
+        {
+          "title": "Decision Audit Completeness",
+          "type": "stat",
+          "datasource": "TimescaleDB",
+          "query": "SELECT (COUNT(DISTINCT f.decision_id)::float / COUNT(DISTINCT d.decision_id)::float * 100) as completeness FROM trading_decisions d LEFT JOIN forensics f ON d.decision_id = f.decision_id WHERE d.time > NOW() - INTERVAL '24 hours'",
+          "unit": "percent",
+          "thresholds": [
+            {"color": "red", "value": 0},
+            {"color": "yellow", "value": 95},
+            {"color": "green", "value": 99}
+          ]
+        },
+        {
+          "title": "Top Feature Importances (SHAP values)",
+          "type": "bargauge",
+          "datasource": "TimescaleDB",
+          "query": "SELECT feature_name, AVG(abs_shap_value) as avg_importance FROM forensics_shap WHERE time > NOW() - INTERVAL '7 days' GROUP BY feature_name ORDER BY avg_importance DESC LIMIT 10",
+          "orientation": "horizontal"
+        }
+      ]
+    }
+  ],
+  "prometheus_alerts": {
+    "critical": [
+      {
+        "alert": "TradingLatencyHigh",
+        "expr": "histogram_quantile(0.95, rate(inference_latency_seconds_bucket[5m])) > 0.2",
+        "for": "5m",
+        "severity": "critical",
+        "summary": "Trading decision latency P95 > 200ms for 5 minutes",
+        "description": "Inference service P95 latency is {{ $value }}s, exceeding 200ms SLA",
+        "action": "Page on-call engineer immediately"
+      },
+      {
+        "alert": "RiskLimitViolationNotCaught",
+        "expr": "increase(risk_checks_failed_total[5m]) > 0 AND increase(trades_executed_total[5m]) > 0",
+        "for": "0m",
+        "severity": "critical",
+        "summary": "Risk limit violation not blocked by risk manager",
+        "description": "Trade executed despite risk check failure - system integrity issue",
+        "action": "Halt trading immediately, page on-call"
+      },
+      {
+        "alert": "ModelServingDown",
+        "expr": "up{job=\"inference-service\"} == 0",
+        "for": "2m",
+        "severity": "critical",
+        "summary": "Inference service unavailable for 2+ minutes",
+        "description": "Model serving service down during market hours",
+        "action": "Page on-call, initiate failover"
+      },
+      {
+        "alert": "DataPipelineFailure",
+        "expr": "rate(data_service_errors_total[5m]) > 0.1",
+        "for": "5m",
+        "severity": "critical",
+        "summary": "Data pipeline error rate > 10% for 5 minutes",
+        "description": "Feature generation failing, preventing trading decisions",
+        "action": "Page on-call, check Redis and data sources"
+      },
+      {
+        "alert": "TimescaleDBPrimaryDown",
+        "expr": "up{job=\"timescaledb\", role=\"primary\"} == 0",
+        "for": "30s",
+        "severity": "critical",
+        "summary": "TimescaleDB primary node down",
+        "description": "Database primary unavailable, automatic failover should occur",
+        "action": "Monitor failover, page if not recovered in 60s"
+      }
+    ],
+    "warning": [
+      {
+        "alert": "ModelRetrainingFailed",
+        "expr": "increase(training_failures_total[6h]) >= 2",
+        "for": "0m",
+        "severity": "warning",
+        "summary": "Model retraining failed 2 consecutive times",
+        "description": "Training job failures indicate stability or resource issues",
+        "action": "Slack notification, investigate logs"
+      },
+      {
+        "alert": "ForensicsBacklogHigh",
+        "expr": "kafka_consumer_lag{topic=\"trading-decisions\"} > 50000",
+        "for": "10m",
+        "severity": "warning",
+        "summary": "Forensics event backlog > 50k events",
+        "description": "Consumer falling behind, forensics processing lag increasing",
+        "action": "Slack notification, consider scaling consumer"
+      },
+      {
+        "alert": "CacheHitRateLow",
+        "expr": "(redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) < 0.8",
+        "for": "30m",
+        "severity": "warning",
+        "summary": "Cache hit rate < 80% sustained for 30 minutes",
+        "description": "Redis cache performance degraded, impacting latency",
+        "action": "Slack notification, check cache warming"
+      },
+      {
+        "alert": "DiskUsageHigh",
+        "expr": "(node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.2",
+        "for": "15m",
+        "severity": "warning",
+        "summary": "Disk usage > 80% on node",
+        "description": "Disk space running low, risk of exhaustion",
+        "action": "Slack notification, trigger cleanup or add capacity"
+      },
+      {
+        "alert": "OnlineLearningUpdateRejected",
+        "expr": "increase(online_learning_rollbacks_total[1h]) > 0",
+        "for": "0m",
+        "severity": "warning",
+        "summary": "Online learning update rejected (stability check failed)",
+        "description": "Incremental model update rolled back due to Sharpe ratio degradation",
+        "action": "Slack notification, freeze updates pending investigation"
+      }
+    ],
+    "info": [
+      {
+        "alert": "NewModelCheckpointCreated",
+        "expr": "increase(model_checkpoints_created_total[1h]) > 0",
+        "for": "0m",
+        "severity": "info",
+        "summary": "New model checkpoint created and promoted",
+        "description": "Model version {{ $labels.version }} saved to registry",
+        "action": "Dashboard notification only"
+      },
+      {
+        "alert": "DailyPerformanceSummary",
+        "expr": "time() % 86400 == 0",
+        "for": "0m",
+        "severity": "info",
+        "summary": "Daily portfolio performance summary",
+        "description": "Generate and send daily performance report",
+        "action": "Automated report generation"
+      }
+    ]
+  },
+  "slack_notifications": {
+    "webhook_url": "${SLACK_WEBHOOK_URL}",
+    "channels": {
+      "critical": "#trading-system-alerts",
+      "warning": "#trading-system-warnings",
+      "info": "#trading-system-info"
+    },
+    "message_format": {
+      "title": "{{ .GroupLabels.alertname }}",
+      "text": "{{ .CommonAnnotations.description }}",
+      "fields": [
+        {"title": "Severity", "value": "{{ .GroupLabels.severity }}"},
+        {"title": "Instance", "value": "{{ .CommonLabels.instance }}"},
+        {"title": "Action", "value": "{{ .CommonAnnotations.action }}"}
+      ]
+    }
+  },
+  "alertmanager_config": {
+    "route": {
+      "receiver": "slack-critical",
+      "group_by": ["alertname", "severity"],
+      "group_wait": "10s",
+      "group_interval": "5m",
+      "repeat_interval": "4h",
+      "routes": [
+        {
+          "receiver": "pagerduty",
+          "matchers": ["severity=critical"],
+          "repeat_interval": "15m"
+        },
+        {
+          "receiver": "slack-warning",
+          "matchers": ["severity=warning"]
+        },
+        {
+          "receiver": "slack-info",
+          "matchers": ["severity=info"]
+        }
+      ]
+    },
+    "receivers": [
+      {
+        "name": "pagerduty",
+        "pagerduty_configs": [
+          {
+            "service_key": "${PAGERDUTY_SERVICE_KEY}",
+            "severity": "critical"
+          }
+        ]
+      },
+      {
+        "name": "slack-critical",
+        "slack_configs": [
+          {
+            "api_url": "${SLACK_WEBHOOK_URL}",
+            "channel": "#trading-system-alerts",
+            "title": "CRITICAL: {{ .GroupLabels.alertname }}"
+          }
+        ]
+      },
+      {
+        "name": "slack-warning",
+        "slack_configs": [
+          {
+            "api_url": "${SLACK_WEBHOOK_URL}",
+            "channel": "#trading-system-warnings",
+            "title": "WARNING: {{ .GroupLabels.alertname }}"
+          }
+        ]
+      },
+      {
+        "name": "slack-info",
+        "slack_configs": [
+          {
+            "api_url": "${SLACK_WEBHOOK_URL}",
+            "channel": "#trading-system-info",
+            "title": "INFO: {{ .GroupLabels.alertname }}"
+          }
+        ]
+      }
+    ]
+  },
+  "data_retention": {
+    "timescaledb": {
+      "experiment_metrics": "365 days",
+      "trading_decisions": "2555 days",
+      "forensics": "2555 days",
+      "regime_history": "1095 days"
+    },
+    "prometheus": {
+      "metrics": "15 days",
+      "retention_size": "50GB"
+    },
+    "kafka": {
+      "trading-decisions": "7 days hot, archive to S3",
+      "retention_bytes": "500GB"
+    }
+  },
+  "backup_schedule": {
+    "timescaledb": {
+      "frequency": "daily",
+      "time": "02:00 UTC",
+      "retention": "30 days",
+      "destination": "s3://ultrathink-backups/timescaledb"
+    },
+    "model_checkpoints": {
+      "frequency": "on_create",
+      "retention": "best 10 per experiment + last 30 days",
+      "archive_destination": "s3://ultrathink-models/archive"
+    }
+  }
+}

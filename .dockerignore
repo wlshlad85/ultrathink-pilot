@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation and markdown files (optional - comment out if you want them in the image)
+*.md
+*.md:Zone.Identifier
+docs/
+
+# Data and models (can be large - mount as volumes instead)
+data/cache/
+rl/models/
+*.pth
+*.pt
+*.ckpt
+
+# Database files (mount as volumes for persistence)
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+files.zip
+files.zip:Zone.Identifier
+*.zip
+
+# Legacy and backup directories
+legacy/
+ultrathink-pilot-update/
+trading-system-architectural-enhancement-docs/
+trading-system-architectural-enhancement-docs.zip
+
+# Scripts not needed in container
+*.sh
+deploy_infrastructure.sh
+diagnose_timescale.sh
+migrate_data.sh
+run_migration.sh
+start_all_services.sh
+start_infrastructure.sh
+verify_and_migrate.sh
+verify_services.sh
+
+# Infrastructure as code (not needed in runtime container)
+infrastructure/
+
+# Environment file (will be passed at runtime)
+.env

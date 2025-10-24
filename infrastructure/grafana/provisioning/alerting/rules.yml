@@ -1,0 +1,156 @@
+apiVersion: 1
+
+groups:
+  - name: ultrathink_training_alerts
+    folder: Training Metrics
+    interval: 1m
+    rules:
+      # Alert: Gradient Explosion Detected
+      - uid: gradient_explosion_alert
+        title: Gradient Explosion Detected
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: TimescaleDB
+            model:
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawSql: |
+                SELECT
+                  timestamp as time,
+                  value as "Loss Value"
+                FROM experiment_metrics
+                WHERE metric_name = 'loss'
+                  AND value > 100
+                  AND timestamp > NOW() - INTERVAL '5 minutes'
+                ORDER BY timestamp DESC
+                LIMIT 1
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: "Training loss exceeded 100 - possible gradient explosion detected in experiment {{ $labels.experiment_id }}"
+          summary: "Loss value: {{ $values.A }}"
+        labels:
+          severity: critical
+          component: training
+
+      # Alert: Training Process Stalled
+      - uid: training_stalled_alert
+        title: Training Process Stalled
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: TimescaleDB
+            model:
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawSql: |
+                SELECT
+                  NOW() as time,
+                  COUNT(*) as metric_count
+                FROM experiment_metrics
+                WHERE timestamp > NOW() - INTERVAL '15 minutes'
+              refId: A
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "No training metrics received in the last 15 minutes - training may have crashed or stalled"
+          summary: "Metrics in last 15min: {{ $values.A }}"
+        labels:
+          severity: warning
+          component: training
+
+      # Alert: Low Win Rate
+      - uid: low_win_rate_alert
+        title: Low Win Rate Detected
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            datasourceUid: TimescaleDB
+            model:
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawSql: |
+                SELECT
+                  NOW() as time,
+                  experiment_id,
+                  (SUM(CASE WHEN value > 0 THEN 1 ELSE 0 END)::float / NULLIF(COUNT(*), 0) * 100) as win_rate
+                FROM experiment_metrics
+                WHERE metric_name = 'episode_return_pct'
+                  AND timestamp > NOW() - INTERVAL '1 hour'
+                GROUP BY experiment_id
+                HAVING (SUM(CASE WHEN value > 0 THEN 1 ELSE 0 END)::float / NULLIF(COUNT(*), 0) * 100) < 40
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          description: "Win rate dropped below 40% in the last hour for experiment {{ $labels.experiment_id }} - model may need retraining"
+          summary: "Current win rate: {{ $values.A }}%"
+        labels:
+          severity: warning
+          component: performance
+
+      # Alert: Episode Length Anomaly
+      - uid: episode_length_anomaly
+        title: Abnormal Episode Length
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: TimescaleDB
+            model:
+              intervalMs: 1000
+              maxDataPoints: 43200
+              rawSql: |
+                SELECT
+                  timestamp as time,
+                  value as episode_length
+                FROM experiment_metrics
+                WHERE metric_name = 'episode_length'
+                  AND timestamp > NOW() - INTERVAL '30 minutes'
+                  AND (value < 50 OR value > 2000)
+                ORDER BY timestamp DESC
+                LIMIT 1
+              refId: A
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        annotations:
+          description: "Episode length outside normal range (50-2000 steps) - possible environment issue"
+          summary: "Episode length: {{ $values.A }} steps"
+        labels:
+          severity: warning
+          component: environment
+
+# Notification channels configuration (to be customized)
+# contactPoints:
+#   - orgId: 1
+#     name: slack-alerts
+#     receivers:
+#       - uid: slack-receiver
+#         type: slack
+#         settings:
+#           url: YOUR_SLACK_WEBHOOK_URL
+#
+#   - orgId: 1
+#     name: email-alerts
+#     receivers:
+#       - uid: email-receiver
+#         type: email
+#         settings:
+#           addresses: your-email@example.com

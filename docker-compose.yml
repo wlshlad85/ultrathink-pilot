@@ -1,0 +1,228 @@
+version: '3.8'
+
+services:
+  # CPU-based trading system (default)
+  ultrathink-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VARIANT: cpu
+        PYTHON_VERSION: "3.11"
+    image: ultrathink-pilot:cpu
+    container_name: ultrathink-cpu
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/app/data
+      # Mount models directory for trained RL models
+      - ./rl/models:/app/rl/models
+      # Mount logs directory
+      - ./logs:/app/logs
+      # Mount database for ML persistence
+      - ./ml_experiments.db:/app/ml_experiments.db
+    environment:
+      # Load environment variables from .env file
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-4000}
+    command: pytest tests/ -v
+    profiles:
+      - cpu
+      - default
+
+  # GPU-based trading system (requires NVIDIA Docker runtime)
+  ultrathink-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VARIANT: gpu
+        PYTHON_VERSION: "3.11"
+    image: ultrathink-pilot:gpu
+    container_name: ultrathink-gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-4000}
+    volumes:
+      - ./data:/app/data
+      - ./rl/models:/app/rl/models
+      - ./logs:/app/logs
+      - ./ml_experiments.db:/app/ml_experiments.db
+    command: pytest tests/ -v
+    profiles:
+      - gpu
+
+  # Backtesting service (CPU)
+  backtest:
+    image: ultrathink-pilot:cpu
+    container_name: ultrathink-backtest
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+    command: >
+      python run_backtest.py
+      --symbol ${SYMBOL:-BTC-USD}
+      --start ${START_DATE:-2023-01-01}
+      --end ${END_DATE:-2024-01-01}
+      --capital ${INITIAL_CAPITAL:-100000}
+      --commission ${COMMISSION:-0.001}
+    profiles:
+      - backtest
+
+  # RL Training service (CPU)
+  rl-train-cpu:
+    image: ultrathink-pilot:cpu
+    container_name: ultrathink-rl-train
+    volumes:
+      - ./data:/app/data
+      - ./rl/models:/app/rl/models
+      - ./logs:/app/logs
+      - ./ml_experiments.db:/app/ml_experiments.db
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    command: >
+      python rl/train.py
+      --episodes ${EPISODES:-100}
+      --symbol ${SYMBOL:-BTC-USD}
+      --start-date ${START_DATE:-2023-01-01}
+      --end-date ${END_DATE:-2024-01-01}
+    profiles:
+      - rl-train
+
+  # RL Training service (GPU)
+  rl-train-gpu:
+    image: ultrathink-pilot:gpu
+    container_name: ultrathink-rl-train-gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./rl/models:/app/rl/models
+      - ./logs:/app/logs
+      - ./ml_experiments.db:/app/ml_experiments.db
+    command: >
+      python rl/train.py
+      --episodes ${EPISODES:-100}
+      --symbol ${SYMBOL:-BTC-USD}
+      --start-date ${START_DATE:-2023-01-01}
+      --end-date ${END_DATE:-2024-01-01}
+    profiles:
+      - rl-train-gpu
+
+  # Development shell (CPU)
+  dev:
+    image: ultrathink-pilot:cpu
+    container_name: ultrathink-dev
+    volumes:
+      - .:/app
+      - /app/.venv
+      - /app/__pycache__
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    profiles:
+      - dev
+
+  # Redis Cache (for Data Service)
+  redis:
+    image: redis:7-alpine
+    container_name: ultrathink-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    profiles:
+      - infrastructure
+      - data-service
+
+  # Data Service API
+  data-service:
+    build:
+      context: ./services/data_service
+      dockerfile: Dockerfile
+    image: ultrathink-pilot:data-service
+    container_name: ultrathink-data-service
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CACHE_TTL_SECONDS=600
+    volumes:
+      - ./data:/app/data
+      - ./services/data_service:/app
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - infrastructure
+      - data-service
+
+  # Online Learning Service (EWC)
+  online-learning:
+    build:
+      context: ./services/online_learning
+      dockerfile: Dockerfile
+    image: ultrathink-pilot:online-learning
+    container_name: ultrathink-online-learning
+    ports:
+      - "8005:8005"
+    environment:
+      - LEARNING_RATE=1e-5
+      - EWC_LAMBDA=1000
+      - WINDOW_DAYS=60
+      - UPDATE_FREQUENCY=daily
+      - CHECKPOINT_DIR=/app/models/online_learning
+    volumes:
+      - ./data:/app/data
+      - ./rl/models:/app/models
+      - ./rl:/app/rl
+      - ./services/online_learning:/app
+    depends_on:
+      - data-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - infrastructure
+      - online-learning
+
+# Volumes for persistent data
+volumes:
+  data:
+  models:
+  logs:
+  database:
+  redis-data:
+
+# Networks (if needed for future multi-service architecture)
+networks:
+  default:
+    name: ultrathink-network

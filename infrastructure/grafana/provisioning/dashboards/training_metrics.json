@@ -1,0 +1,154 @@
+{
+  "dashboard": {
+    "title": "RL Training Metrics",
+    "tags": ["training", "rl", "ppo"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "timeseries",
+        "title": "Episode Returns (%)",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Return %\" FROM experiment_metrics WHERE metric_name = 'episode_return_pct' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10},
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "timeseries",
+        "title": "Episode Rewards",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Reward\" FROM experiment_metrics WHERE metric_name = 'episode_reward' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10}
+          }
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+        "type": "timeseries",
+        "title": "10-Episode Average Return",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Avg Return (10ep)\" FROM experiment_metrics WHERE metric_name = 'avg_return_10ep' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "continuous-GrYlRd"},
+            "custom": {"lineWidth": 3, "fillOpacity": 20},
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+        "type": "timeseries",
+        "title": "50-Episode Average Return",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Avg Return (50ep)\" FROM experiment_metrics WHERE metric_name = 'avg_return_50ep' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "continuous-BlYlRd"},
+            "custom": {"lineWidth": 3, "fillOpacity": 20},
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+        "type": "stat",
+        "title": "Best Return",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT MAX(value) as value FROM experiment_metrics WHERE metric_name = 'best_return_pct'",
+          "format": "table"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 0, "color": "yellow"},
+                {"value": 5, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "type": "timeseries",
+        "title": "Episode Length (Steps)",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Steps\" FROM experiment_metrics WHERE metric_name = 'episode_length' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10}
+          }
+        }
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "type": "timeseries",
+        "title": "Portfolio Value",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT time, value as \"Portfolio $\" FROM experiment_metrics WHERE metric_name = 'final_portfolio_value' ORDER BY time",
+          "format": "time_series"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "continuous-GrYlRd"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10},
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 24},
+        "type": "table",
+        "title": "Recent Experiments",
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "TimescaleDB"},
+          "rawSql": "SELECT id, name, status, start_time, end_time, EXTRACT(EPOCH FROM (end_time - start_time))/3600 as duration_hours FROM experiments ORDER BY start_time DESC LIMIT 10",
+          "format": "table"
+        }]
+      }
+    ]
+  }
+}

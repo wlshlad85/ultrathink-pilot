@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-10-25T00:35:40.061801",
+  "test_period_days": 90,
+  "total_timesteps": 2160,
+  "rl_metrics": {
+    "churn_rate": 0.08604986671808695,
+    "transition_count": 236,
+    "max_disruption": 0.222176656126976,
+    "mean_disruption": 0.08604986671808695,
+    "std_disruption": 0.03413271077230748,
+    "method": "Hierarchical RL",
+    "total_timesteps": 2160
+  },
+  "naive_metrics": {
+    "churn_rate": 0.03520148216767022,
+    "transition_count": 76,
+    "max_disruption": 1.0,
+    "mean_disruption": 0.03520148216767022,
+    "std_disruption": 0.18428873492666178,
+    "method": "Naive Router",
+    "total_timesteps": 2160
+  },
+  "improvement_pct": -144.4495555846707,
+  "target_met": "False",
+  "better_than_baseline": "False"
+}

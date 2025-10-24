@@ -1,0 +1,210 @@
+groups:
+  # ===================================================================
+  # CRITICAL ALERTS - PagerDuty / Page On-Call
+  # ===================================================================
+  - name: critical_alerts
+    interval: 30s
+    rules:
+      # Alert: Trading API latency exceeds threshold
+      - alert: TradingLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{
+              job=~"inference-service|risk-manager|data-service"
+            }[5m])
+          ) * 1000 > 200
+        for: 5m
+        labels:
+          severity: critical
+          component: trading
+          oncall: true
+        annotations:
+          summary: "Trading API P95 latency exceeds 200ms"
+          description: "{{ $labels.job }} has P95 latency of {{ $value | humanize }}ms (threshold: 200ms). This may impact trade execution quality."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/high-latency"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: Risk limit violation bypass detected
+      - alert: RiskLimitViolationNotBlocked
+        expr: |
+          rate(risk_check_bypassed_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: risk
+          oncall: true
+        annotations:
+          summary: "Risk check bypassed - IMMEDIATE ACTION REQUIRED"
+          description: "Risk limit checks are being bypassed at {{ $value | humanize }} per second. This could lead to uncontrolled position sizes."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/risk-bypass"
+          dashboard: "http://grafana:3000/d/ultrathink-trading-decisions"
+
+      # Alert: Model serving/inference service down
+      - alert: ModelServingDown
+        expr: |
+          up{job="inference-service"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: inference
+          oncall: true
+        annotations:
+          summary: "Inference service is down"
+          description: "The inference service has been unreachable for 2+ minutes. Trading decisions cannot be made."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/inference-down"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: Data pipeline failure
+      - alert: DataPipelineFailure
+        expr: |
+          up{job="data-service"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: data
+          oncall: true
+        annotations:
+          summary: "Data service is down"
+          description: "The data service has been down for 5+ minutes. Feature engineering pipeline is halted."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/data-service-down"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: TimescaleDB connection lost
+      - alert: TimescaleDBConnectionLost
+        expr: |
+          up{job="timescaledb"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+          oncall: true
+        annotations:
+          summary: "TimescaleDB is unreachable"
+          description: "Cannot connect to TimescaleDB for 2+ minutes. Metrics logging and historical data queries will fail."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/timescaledb-down"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+  # ===================================================================
+  # WARNING ALERTS - Slack Notifications
+  # ===================================================================
+  - name: warning_alerts
+    interval: 1m
+    rules:
+      # Alert: Model retraining failed
+      - alert: ModelRetrainingFailed
+        expr: |
+          increase(training_failures_total[1h]) >= 2
+        for: 5m
+        labels:
+          severity: warning
+          component: training
+        annotations:
+          summary: "Model retraining has failed {{ $value }} times in the last hour"
+          description: "Training pipeline has experienced {{ $value }} failures. Check MLflow logs for errors."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/training-failures"
+          dashboard: "http://grafana:3000/d/ultrathink-training-metrics"
+
+      # Alert: Forensics backlog high
+      - alert: ForensicsBacklogHigh
+        expr: |
+          kafka_consumer_lag{topic="forensics_events"} > 50000
+        for: 10m
+        labels:
+          severity: warning
+          component: forensics
+        annotations:
+          summary: "Forensics consumer has {{ $value }} unprocessed events"
+          description: "The forensics consumer is falling behind. Lag is {{ $value }} messages (threshold: 50k)."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/forensics-backlog"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: Cache hit rate low
+      - alert: CacheHitRateLow
+        expr: |
+          (
+            rate(redis_cache_hits_total[5m]) /
+            (rate(redis_cache_hits_total[5m]) + rate(redis_cache_misses_total[5m]))
+          ) * 100 < 80
+        for: 30m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis cache hit rate is {{ $value | humanizePercentage }}"
+          description: "Cache hit rate has been below 80% for 30 minutes (current: {{ $value | humanizePercentage }}). This increases latency and database load."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/low-cache-hit-rate"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: Disk usage high
+      - alert: DiskUsageHigh
+        expr: |
+          (
+            node_filesystem_size_bytes{mountpoint="/"} -
+            node_filesystem_avail_bytes{mountpoint="/"}
+          ) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          description: "Available disk space is below 20% on {{ $labels.mountpoint }}. Consider cleanup or expansion."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/disk-space"
+          dashboard: "http://grafana:3000/d/ultrathink-system-performance"
+
+      # Alert: Online learning performance degradation
+      - alert: OnlineLearningDegradation
+        expr: |
+          (
+            (
+              avg_over_time(episode_return_pct{learning_mode="online"}[1h]) -
+              avg_over_time(episode_return_pct{learning_mode="online"}[1h] offset 24h)
+            ) /
+            abs(avg_over_time(episode_return_pct{learning_mode="online"}[1h] offset 24h))
+          ) * 100 < -20
+        for: 2h
+        labels:
+          severity: warning
+          component: training
+        annotations:
+          summary: "Online learning performance has degraded by {{ $value | humanizePercentage }}"
+          description: "Episode return has dropped by more than 20% compared to 24h ago. This may indicate model drift or regime shift."
+          runbook_url: "https://wiki.ultrathink.io/runbooks/performance-degradation"
+          dashboard: "http://grafana:3000/d/ultrathink-training-metrics"
+
+  # ===================================================================
+  # PERFORMANCE MONITORING
+  # ===================================================================
+  - name: performance_monitoring
+    interval: 1m
+    rules:
+      # Recording rule: API latency percentiles
+      - record: job:http_request_duration_seconds:p95
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket[5m])
+          )
+
+      - record: job:http_request_duration_seconds:p99
+        expr: |
+          histogram_quantile(0.99,
+            rate(http_request_duration_seconds_bucket[5m])
+          )
+
+      # Recording rule: Cache hit rate
+      - record: job:cache_hit_rate:percent
+        expr: |
+          (
+            rate(redis_cache_hits_total[5m]) /
+            (rate(redis_cache_hits_total[5m]) + rate(redis_cache_misses_total[5m]))
+          ) * 100
+
+      # Recording rule: Trading decision rate
+      - record: job:trading_decisions:rate5m
+        expr: |
+          rate(trading_decisions_total[5m]) * 60
+
+      # Recording rule: Model inference throughput
+      - record: job:model_inference:throughput
+        expr: |
+          rate(model_inference_requests_total[5m]) * 60

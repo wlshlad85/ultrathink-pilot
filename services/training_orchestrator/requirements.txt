@@ -1,0 +1,21 @@
+# Training Orchestrator Service Dependencies
+# Deep Learning - Using PyTorch Nightly for RTX 5070 (sm_120) support
+# Install with: pip install torch --index-url https://download.pytorch.org/whl/nightly/cu121
+torch>=2.10.0.dev
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+
+# Celery for Distributed Training
+celery==5.3.4
+redis==5.0.0
+
+# Kafka Integration
+kafka-python==2.0.2
+
+# MLflow for Experiment Tracking
+mlflow==2.8.0
+protobuf==4.24.4
+
+# Utilities
+python-dateutil==2.8.2

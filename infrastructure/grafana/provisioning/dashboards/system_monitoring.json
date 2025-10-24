@@ -1,0 +1,105 @@
+{
+  "dashboard": {
+    "title": "Infrastructure Monitoring",
+    "tags": ["system", "docker", "infrastructure"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 0},
+        "type": "timeseries",
+        "title": "CPU Usage",
+        "targets": [{
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\"ultrathink.*\"}[5m])",
+          "legendFormat": "{{name}}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10},
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 0},
+        "type": "timeseries",
+        "title": "Memory Usage",
+        "targets": [{
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "container_memory_usage_bytes{name=~\"ultrathink.*\"}",
+          "legendFormat": "{{name}}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10},
+            "unit": "bytes"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 6},
+        "type": "timeseries",
+        "title": "Network I/O",
+        "targets": [
+          {
+            "datasource": {"type": "prometheus", "uid": "Prometheus"},
+            "expr": "rate(container_network_receive_bytes_total{name=~\"ultrathink.*\"}[5m])",
+            "legendFormat": "{{name}} RX"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "Prometheus"},
+            "expr": "rate(container_network_transmit_bytes_total{name=~\"ultrathink.*\"}[5m])",
+            "legendFormat": "{{name}} TX"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {"lineWidth": 2, "fillOpacity": 10},
+            "unit": "Bps"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 6},
+        "type": "stat",
+        "title": "Container Status",
+        "targets": [{
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "expr": "container_last_seen{name=~\"ultrathink.*\"}",
+          "legendFormat": "{{name}}",
+          "instant": true
+        }],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "DOWN"},
+              {"type": "value", "value": "1", "text": "UP"}
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,782 @@
+{
+  "metadata": {
+    "generated": "2025-10-24",
+    "version": "1.0.0",
+    "total_tasks": 37,
+    "estimated_duration_days": 10,
+    "master_orchestrator": "active",
+    "deputy_agent": "coordinating"
+  },
+  "waves": [
+    {
+      "wave_id": 1,
+      "name": "Critical Path (P0)",
+      "priority": "HIGHEST",
+      "duration_days": "2-3",
+      "deployment": "parallel",
+      "agents": [
+        {
+          "agent_id": "regime-detection-specialist",
+          "agent_file": ".claude/agents/regime-detection-specialist.md",
+          "mission": "Implement probabilistic regime detection",
+          "priority": "P0",
+          "duration_hours": 20,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W1-A1-T1",
+              "name": "Research & Design DPGMM",
+              "duration_hours": 4,
+              "deliverable": "Algorithm selection document",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A1-T2",
+              "name": "Implement probabilistic regime detector",
+              "duration_hours": 8,
+              "deliverable": "services/regime_detection/probabilistic_regime_detector.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A1-T3",
+              "name": "Integration with Data Service and TimescaleDB",
+              "duration_hours": 4,
+              "deliverable": "API endpoint: GET /regime/probabilities",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A1-T4",
+              "name": "Validation and backtesting",
+              "duration_hours": 4,
+              "deliverable": "REGIME_DETECTION_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "Probabilities sum to 1.0 ± 0.001",
+            "Portfolio disruption <5% (vs 15% baseline)",
+            "API endpoint responsive",
+            "Unit tests passing"
+          ]
+        },
+        {
+          "agent_id": "risk-management-engineer",
+          "agent_file": ".claude/agents/risk-management-engineer.md",
+          "mission": "Build portfolio-level risk controls",
+          "priority": "P0",
+          "duration_hours": 20,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W1-A2-T1",
+              "name": "Architecture design for risk manager",
+              "duration_hours": 3,
+              "deliverable": "Risk check API contract",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A2-T2",
+              "name": "Core implementation of portfolio risk manager",
+              "duration_hours": 10,
+              "deliverable": "services/risk_manager/portfolio_risk_manager.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A2-T3",
+              "name": "Integration with Inference Service",
+              "duration_hours": 4,
+              "deliverable": "API endpoints: POST /risk/check, GET /risk/portfolio",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A2-T4",
+              "name": "Testing and validation",
+              "duration_hours": 3,
+              "deliverable": "RISK_MANAGER_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "25% concentration limit enforced",
+            "Trade rejection working correctly",
+            "<10ms P95 latency",
+            "VaR calculation accurate"
+          ]
+        },
+        {
+          "agent_id": "inference-api-engineer",
+          "agent_file": ".claude/agents/inference-api-engineer.md",
+          "mission": "Deploy production inference service",
+          "priority": "P0",
+          "duration_hours": 25,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W1-A3-T1",
+              "name": "API design and FastAPI setup",
+              "duration_hours": 3,
+              "deliverable": "FastAPI application structure",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A3-T2",
+              "name": "Core implementation of inference service",
+              "duration_hours": 10,
+              "deliverable": "services/inference_service/inference_api.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A3-T3",
+              "name": "Integration with all dependent services",
+              "duration_hours": 5,
+              "deliverable": "Integrated /api/v1/predict endpoint",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A3-T4",
+              "name": "Performance optimization",
+              "duration_hours": 4,
+              "deliverable": "Load test results (<50ms P95)",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A3-T5",
+              "name": "Testing and documentation",
+              "duration_hours": 3,
+              "deliverable": "INFERENCE_API_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "<50ms P95 latency validated",
+            "All service integrations working",
+            "Error handling robust",
+            "Load test passing (10k requests)"
+          ]
+        },
+        {
+          "agent_id": "qa-testing-engineer",
+          "agent_file": ".claude/agents/qa-testing-engineer.md",
+          "mission": "Ensure 85% test coverage for Wave 1",
+          "priority": "P0",
+          "duration_hours": 20,
+          "dependencies": ["W1-A1-T2", "W1-A2-T2", "W1-A3-T2"],
+          "tasks": [
+            {
+              "task_id": "W1-A4-T1",
+              "name": "Test infrastructure setup",
+              "duration_hours": 4,
+              "deliverable": "pytest configuration, CI/CD integration",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A4-T2",
+              "name": "Unit test coverage for Wave 1 services",
+              "duration_hours": 8,
+              "deliverable": "Comprehensive test suite (tests/)",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A4-T3",
+              "name": "Integration test suite",
+              "duration_hours": 6,
+              "deliverable": "End-to-end tests",
+              "status": "pending"
+            },
+            {
+              "task_id": "W1-A4-T4",
+              "name": "Coverage analysis and reporting",
+              "duration_hours": 2,
+              "deliverable": "WAVE1_TEST_COVERAGE_REPORT.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "85%+ test coverage achieved",
+            "All integration tests passing",
+            "CI/CD pipeline operational",
+            "Coverage report generated"
+          ]
+        }
+      ],
+      "validation_criteria": [
+        "Probabilistic regime detection operational",
+        "Risk manager enforcing limits",
+        "Inference API <50ms P95 latency",
+        "85%+ test coverage",
+        "All P0 integration tests passing"
+      ]
+    },
+    {
+      "wave_id": 2,
+      "name": "Performance Optimization (P1)",
+      "priority": "HIGH",
+      "duration_days": "3-4",
+      "deployment": "sequential",
+      "agents": [
+        {
+          "agent_id": "event-architecture-specialist",
+          "agent_file": ".claude/agents/event-architecture-specialist.md",
+          "mission": "Decouple forensics via Kafka",
+          "priority": "P1",
+          "duration_hours": 20,
+          "dependencies": ["W1-A3-T2"],
+          "tasks": [
+            {
+              "task_id": "W2-A1-T1",
+              "name": "Kafka topic design for trading decisions",
+              "duration_hours": 3,
+              "deliverable": "Topic: trading-decisions created",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A1-T2",
+              "name": "Producer integration in Inference Service",
+              "duration_hours": 4,
+              "deliverable": "services/inference_service/kafka_producer.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A1-T3",
+              "name": "Forensics consumer implementation",
+              "duration_hours": 8,
+              "deliverable": "services/forensics_consumer/",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A1-T4",
+              "name": "Integration and load testing",
+              "duration_hours": 5,
+              "deliverable": "FORENSICS_DECOUPLING_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "Trading latency <50ms (forensics async)",
+            "Consumer lag <5 seconds",
+            "100k events/sec throughput validated",
+            "Audit trail completeness verified"
+          ]
+        },
+        {
+          "agent_id": "online-learning-engineer",
+          "agent_file": ".claude/agents/online-learning-engineer.md",
+          "mission": "Implement EWC incremental updates",
+          "priority": "P1",
+          "duration_hours": 28,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W2-A2-T1",
+              "name": "EWC algorithm research and design",
+              "duration_hours": 4,
+              "deliverable": "EWC implementation plan",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A2-T2",
+              "name": "Core EWC implementation",
+              "duration_hours": 12,
+              "deliverable": "services/online_learning/ewc_trainer.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A2-T3",
+              "name": "Integration with Training Orchestrator",
+              "duration_hours": 6,
+              "deliverable": "API endpoint: POST /api/v1/models/online-update",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A2-T4",
+              "name": "Validation with regime shift simulation",
+              "duration_hours": 6,
+              "deliverable": "ONLINE_LEARNING_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "<5% performance degradation (30-day test)",
+            "Automatic rollback on >30% degradation",
+            "Stability checks operational",
+            "EWC regularization validated"
+          ]
+        },
+        {
+          "agent_id": "data-pipeline-architect",
+          "agent_file": ".claude/agents/data-pipeline-architect.md",
+          "mission": "Complete unified data pipeline",
+          "priority": "P1",
+          "duration_hours": 22,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W2-A3-T1",
+              "name": "Architecture review and gap analysis",
+              "duration_hours": 3,
+              "deliverable": "Data pipeline audit report",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A3-T2",
+              "name": "Feature engineering pipeline implementation",
+              "duration_hours": 10,
+              "deliverable": "services/data_service/feature_engineering_pipeline.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A3-T3",
+              "name": "Redis cache integration",
+              "duration_hours": 5,
+              "deliverable": "90%+ cache hit rate achieved",
+              "status": "pending"
+            },
+            {
+              "task_id": "W2-A3-T4",
+              "name": "Testing and performance validation",
+              "duration_hours": 4,
+              "deliverable": "DATA_PIPELINE_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "3x training speedup validated",
+            "90%+ cache hit rate",
+            "<20ms P95 latency",
+            "Lookahead bias prevention verified"
+          ]
+        }
+      ],
+      "validation_criteria": [
+        "Forensics decoupled (trading latency <50ms)",
+        "Online learning maintaining <5% degradation",
+        "Data pipeline 90%+ cache hit rate",
+        "3x training speedup validated"
+      ]
+    },
+    {
+      "wave_id": 3,
+      "name": "Production Polish (P2)",
+      "priority": "MEDIUM",
+      "duration_days": "2-3",
+      "deployment": "parallel",
+      "agents": [
+        {
+          "agent_id": "database-migration-specialist",
+          "agent_file": ".claude/agents/database-migration-specialist.md",
+          "mission": "Migrate MLflow to TimescaleDB",
+          "priority": "P2",
+          "duration_hours": 8,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W3-A1-T1",
+              "name": "MLflow backend configuration",
+              "duration_hours": 2,
+              "deliverable": "Updated docker-compose.yml",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A1-T2",
+              "name": "Custom MLflow Docker image build",
+              "duration_hours": 3,
+              "deliverable": "infrastructure/mlflow/Dockerfile",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A1-T3",
+              "name": "Data migration from SQLite",
+              "duration_hours": 2,
+              "deliverable": "Migration complete, validated",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A1-T4",
+              "name": "Integration testing",
+              "duration_hours": 1,
+              "deliverable": "MLFLOW_MIGRATION_REPORT.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "MLflow using TimescaleDB backend",
+            "20+ concurrent experiments validated",
+            "Data continuity verified",
+            "No performance degradation"
+          ]
+        },
+        {
+          "agent_id": "ml-training-specialist",
+          "agent_file": ".claude/agents/ml-training-specialist.md",
+          "mission": "Implement A/B testing framework",
+          "priority": "P2",
+          "duration_hours": 14,
+          "dependencies": ["W1-A3-T2"],
+          "tasks": [
+            {
+              "task_id": "W3-A2-T1",
+              "name": "A/B testing framework design",
+              "duration_hours": 3,
+              "deliverable": "Traffic splitting design",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A2-T2",
+              "name": "Implementation in Inference Service",
+              "duration_hours": 6,
+              "deliverable": "services/inference_service/ab_testing_manager.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A2-T3",
+              "name": "Integration with MLflow model registry",
+              "duration_hours": 3,
+              "deliverable": "Grafana A/B test dashboard",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A2-T4",
+              "name": "Testing and validation",
+              "duration_hours": 2,
+              "deliverable": "AB_TESTING_FRAMEWORK.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "A/B testing operational",
+            "Traffic splitting accurate",
+            "Shadow mode functional",
+            "Performance comparison dashboard live"
+          ]
+        },
+        {
+          "agent_id": "meta-controller-researcher",
+          "agent_file": ".claude/agents/meta-controller-researcher.md",
+          "mission": "Validate and optimize meta-controller",
+          "priority": "P2",
+          "duration_hours": 18,
+          "dependencies": ["W1-A1-T2"],
+          "tasks": [
+            {
+              "task_id": "W3-A3-T1",
+              "name": "Code audit of existing meta-controller",
+              "duration_hours": 4,
+              "deliverable": "Audit report",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A3-T2",
+              "name": "Optimization and bug fixes",
+              "duration_hours": 6,
+              "deliverable": "Updated services/meta_controller/",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A3-T3",
+              "name": "Integration with regime detection",
+              "duration_hours": 4,
+              "deliverable": "Strategy weight blending operational",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A3-T4",
+              "name": "Backtesting and validation",
+              "duration_hours": 4,
+              "deliverable": "META_CONTROLLER_VALIDATION.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "<5% portfolio disruption during transitions",
+            "Strategy weights sum to 1.0",
+            "Outperforms regime-based routing",
+            "Validation checks operational"
+          ]
+        },
+        {
+          "agent_id": "monitoring-observability-specialist",
+          "agent_file": ".claude/agents/monitoring-observability-specialist.md",
+          "mission": "Deploy production dashboards and alerts",
+          "priority": "P2",
+          "duration_hours": 18,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W3-A4-T1",
+              "name": "Grafana dashboard creation",
+              "duration_hours": 8,
+              "deliverable": "3 Grafana dashboards",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A4-T2",
+              "name": "Prometheus alert rules configuration",
+              "duration_hours": 6,
+              "deliverable": "infrastructure/prometheus/alerts.yml",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A4-T3",
+              "name": "Alert routing setup",
+              "duration_hours": 2,
+              "deliverable": "Slack integration configured",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A4-T4",
+              "name": "Testing and validation",
+              "duration_hours": 2,
+              "deliverable": "MONITORING_RUNBOOK.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "3 Grafana dashboards deployed",
+            "Critical alerts configured (page on-call)",
+            "Warning alerts configured (Slack)",
+            "Runbook documentation complete"
+          ]
+        },
+        {
+          "agent_id": "infrastructure-engineer",
+          "agent_file": ".claude/agents/infrastructure-engineer.md",
+          "mission": "Automated checkpoint cleanup and failover",
+          "priority": "P2",
+          "duration_hours": 16,
+          "dependencies": [],
+          "tasks": [
+            {
+              "task_id": "W3-A5-T1",
+              "name": "Checkpoint retention policy implementation",
+              "duration_hours": 4,
+              "deliverable": "scripts/checkpoint_cleanup.py",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A5-T2",
+              "name": "Failover mechanisms (circuit breakers)",
+              "duration_hours": 6,
+              "deliverable": "Circuit breaker integrations",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A5-T3",
+              "name": "Resource management and limits",
+              "duration_hours": 4,
+              "deliverable": "Updated docker-compose.yml",
+              "status": "pending"
+            },
+            {
+              "task_id": "W3-A5-T4",
+              "name": "Runbook documentation",
+              "duration_hours": 2,
+              "deliverable": "INFRASTRUCTURE_RUNBOOK.md",
+              "status": "pending"
+            }
+          ],
+          "success_criteria": [
+            "Checkpoint cleanup active (daily)",
+            "Disk growth <500MB/day",
+            "Circuit breakers tested",
+            "Failover runbooks documented"
+          ]
+        }
+      ],
+      "validation_criteria": [
+        "MLflow using TimescaleDB backend",
+        "A/B testing framework operational",
+        "Meta-controller validated",
+        "Grafana dashboards deployed",
+        "Automated checkpoint cleanup active"
+      ]
+    }
+  ],
+  "production_readiness_checklist": [
+    {
+      "category": "Core Functionality",
+      "items": [
+        {
+          "id": "PRC-001",
+          "requirement": "Probabilistic regime detection operational",
+          "status": "pending",
+          "owner": "regime-detection-specialist"
+        },
+        {
+          "id": "PRC-002",
+          "requirement": "Risk manager enforcing limits",
+          "status": "pending",
+          "owner": "risk-management-engineer"
+        },
+        {
+          "id": "PRC-003",
+          "requirement": "Inference API <50ms P95 latency",
+          "status": "pending",
+          "owner": "inference-api-engineer"
+        },
+        {
+          "id": "PRC-004",
+          "requirement": "Forensics decoupled (async)",
+          "status": "pending",
+          "owner": "event-architecture-specialist"
+        }
+      ]
+    },
+    {
+      "category": "Performance",
+      "items": [
+        {
+          "id": "PRC-005",
+          "requirement": "Online learning maintaining <5% degradation",
+          "status": "pending",
+          "owner": "online-learning-engineer"
+        },
+        {
+          "id": "PRC-006",
+          "requirement": "Data pipeline 3x faster (90%+ cache hit rate)",
+          "status": "pending",
+          "owner": "data-pipeline-architect"
+        },
+        {
+          "id": "PRC-007",
+          "requirement": "Training supports 20+ concurrent experiments",
+          "status": "pending",
+          "owner": "database-migration-specialist"
+        }
+      ]
+    },
+    {
+      "category": "Quality Assurance",
+      "items": [
+        {
+          "id": "PRC-008",
+          "requirement": "85%+ test coverage achieved",
+          "status": "pending",
+          "owner": "qa-testing-engineer"
+        },
+        {
+          "id": "PRC-009",
+          "requirement": "All integration tests passing",
+          "status": "pending",
+          "owner": "qa-testing-engineer"
+        },
+        {
+          "id": "PRC-010",
+          "requirement": "Load tests validating performance targets",
+          "status": "pending",
+          "owner": "qa-testing-engineer"
+        }
+      ]
+    },
+    {
+      "category": "Operations",
+      "items": [
+        {
+          "id": "PRC-011",
+          "requirement": "Monitoring dashboards deployed",
+          "status": "pending",
+          "owner": "monitoring-observability-specialist"
+        },
+        {
+          "id": "PRC-012",
+          "requirement": "Alerts configured (critical + warning)",
+          "status": "pending",
+          "owner": "monitoring-observability-specialist"
+        },
+        {
+          "id": "PRC-013",
+          "requirement": "Circuit breakers tested",
+          "status": "pending",
+          "owner": "infrastructure-engineer"
+        },
+        {
+          "id": "PRC-014",
+          "requirement": "Runbook documentation complete",
+          "status": "pending",
+          "owner": "infrastructure-engineer"
+        }
+      ]
+    },
+    {
+      "category": "Production Deployment",
+      "items": [
+        {
+          "id": "PRC-015",
+          "requirement": "Shadow mode validated (1 week)",
+          "status": "pending",
+          "owner": "master-orchestrator"
+        },
+        {
+          "id": "PRC-016",
+          "requirement": "Canary rollout successful (5% → 25% → 100%)",
+          "status": "pending",
+          "owner": "master-orchestrator"
+        },
+        {
+          "id": "PRC-017",
+          "requirement": "Rollback capability tested",
+          "status": "pending",
+          "owner": "master-orchestrator"
+        }
+      ]
+    }
+  ],
+  "escalation_matrix": [
+    {
+      "severity": "critical",
+      "conditions": [
+        "P0 task blocked >4 hours",
+        "Performance target unmet after optimization",
+        "Integration failure blocking multiple agents",
+        "Security vulnerability discovered"
+      ],
+      "escalate_to": "master-orchestrator",
+      "response_time_minutes": 15
+    },
+    {
+      "severity": "high",
+      "conditions": [
+        "P1 task blocked >8 hours",
+        "Test coverage below 80%",
+        "Resource contention (GPU/memory)",
+        "Dependency unavailable"
+      ],
+      "escalate_to": "deputy-agent",
+      "response_time_minutes": 60
+    },
+    {
+      "severity": "medium",
+      "conditions": [
+        "P2 task delayed >1 day",
+        "Minor integration issues",
+        "Documentation gaps",
+        "Non-critical bugs"
+      ],
+      "escalate_to": "deputy-agent",
+      "response_time_minutes": 240
+    }
+  ],
+  "coordination_protocol": {
+    "status_updates": {
+      "frequency_minutes": 30,
+      "format": "json",
+      "destination": "/agent-coordination/status.json",
+      "fields": [
+        "agent_id",
+        "current_task",
+        "progress_percentage",
+        "blockers",
+        "eta"
+      ]
+    },
+    "daily_sync": {
+      "time": "09:00 UTC",
+      "attendees": ["deputy-agent", "all active wave agents"],
+      "agenda": ["Progress review", "Blocker discussion", "Resource allocation"]
+    },
+    "wave_transition": {
+      "trigger": "all validation criteria met",
+      "approval": "master-orchestrator",
+      "documentation": "wave completion report required"
+    }
+  }
+}

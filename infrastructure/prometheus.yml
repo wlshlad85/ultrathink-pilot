@@ -1,0 +1,72 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ultrathink-pilot'
+    environment: 'development'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      timeout: 10s
+
+# Rule files for alerts
+rule_files:
+  - "alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # TimescaleDB metrics (requires postgres_exporter)
+  - job_name: 'timescaledb'
+    static_configs:
+      - targets: ['timescaledb:9187']
+    # Uncomment when postgres_exporter is added to docker-compose
+
+  # MLflow metrics
+  - job_name: 'mlflow'
+    static_configs:
+      - targets: ['mlflow:5000']
+    metrics_path: '/metrics'
+
+  # Risk Manager metrics
+  - job_name: 'risk-manager'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['risk-manager:8001']
+        labels:
+          service: 'risk-manager'
+
+  # Data Service metrics
+  - job_name: 'data-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['data-service:8000']
+        labels:
+          service: 'data-service'
+
+  # Inference Service metrics
+  - job_name: 'inference-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['inference-service:8080']
+        labels:
+          service: 'inference-service'
+
+  # Redis metrics (requires redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:9121']
+    # Uncomment when redis_exporter is added
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+    # Install node_exporter on host for system metrics
