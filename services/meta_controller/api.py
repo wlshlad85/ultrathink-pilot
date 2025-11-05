@@ -198,6 +198,73 @@ async def root():
     }
 
 
+def get_recent_pnl(symbol: str, lookback_hours: int = 24) -> float:
+    """
+    Fetch recent PnL from trading_decisions table
+
+    Args:
+        symbol: Trading symbol (e.g., 'BTC-USD')
+        lookback_hours: Hours to look back for PnL calculation
+
+    Returns:
+        Recent PnL as percentage change in portfolio value, or 0.0 if no data
+    """
+    if db_interface is None:
+        logger.warning("Database not available, returning default PnL=0.0")
+        return 0.0
+
+    try:
+        with db_interface._get_connection() as conn:
+            with conn.cursor() as cur:
+                # Get portfolio values from the lookback period
+                cur.execute(f"""
+                    SELECT portfolio_value, time
+                    FROM trading_decisions
+                    WHERE symbol = %s
+                        AND time >= NOW() - INTERVAL '{lookback_hours} hours'
+                    ORDER BY time ASC
+                    LIMIT 1
+                """, (symbol,))
+
+                start_row = cur.fetchone()
+
+                if not start_row:
+                    logger.info(f"No trading decisions found for {symbol} in last {lookback_hours}h")
+                    return 0.0
+
+                # Get most recent portfolio value
+                cur.execute("""
+                    SELECT portfolio_value, time
+                    FROM trading_decisions
+                    WHERE symbol = %s
+                    ORDER BY time DESC
+                    LIMIT 1
+                """, (symbol,))
+
+                end_row = cur.fetchone()
+
+                if not end_row:
+                    return 0.0
+
+                start_value = start_row[0]
+                end_value = end_row[0]
+
+                if start_value is None or end_value is None or start_value == 0:
+                    return 0.0
+
+                # Calculate percentage change
+                pnl_pct = ((end_value - start_value) / start_value) * 100.0
+
+                logger.info(f"Recent PnL for {symbol}: {pnl_pct:.2f}% "
+                           f"({start_value:.2f} -> {end_value:.2f})")
+
+                return float(pnl_pct)
+
+    except Exception as e:
+        logger.error(f"Failed to fetch recent PnL for {symbol}: {e}")
+        return 0.0
+
+
 @app.post("/api/v1/meta-controller/decide", response_model=DecisionResponse)
 async def decide_strategy_weights(request: DecisionRequest):
     """
@@ -313,6 +380,9 @@ async def decide_from_regime_service(
         response.raise_for_status()
         regime_data = response.json()
 
+        # Fetch recent PnL from trading decisions
+        recent_pnl = get_recent_pnl(symbol, lookback_hours=24)
+
         # Extract regime probabilities
         request_data = DecisionRequest(
             symbol=symbol,
@@ -322,7 +392,7 @@ async def decide_from_regime_service(
             entropy=regime_data['entropy'],
             confidence=regime_data['confidence'],
             market_features=MarketFeatures(
-                recent_pnl=0.0,  # TODO: Fetch from metrics service
+                recent_pnl=recent_pnl,
                 volatility_20d=0.02,  # Default
                 trend_strength=0.0,  # Default
                 volume_ratio=1.0  # Default
