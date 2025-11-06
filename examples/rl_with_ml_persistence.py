@@ -34,7 +34,8 @@ def train_with_persistence(
     end_date: str = "2024-01-01",
     initial_capital: float = 100000.0,
     experiment_name: str = None,
-    tags: list = None
+    tags: list = None,
+    random_seed: int = 42
 ):
     """
     Train PPO agent with full ML persistence tracking.
@@ -50,6 +51,7 @@ def train_with_persistence(
         initial_capital: Initial portfolio capital
         experiment_name: Custom experiment name (auto-generated if None)
         tags: List of tags for experiment
+        random_seed: Random seed for reproducibility (default: 42)
     """
 
     # ========================================================================
@@ -70,7 +72,7 @@ def train_with_persistence(
         experiment_type="rl",
         description=f"PPO agent training on {symbol} from {start_date} to {end_date}",
         tags=tags or ["rl", "ppo", symbol.lower()],
-        random_seed=42,  # TODO: Make configurable
+        random_seed=random_seed,
         capture_git=True,
         metadata={
             "framework": "PPO",
@@ -328,6 +330,7 @@ def main():
     # Experiment metadata
     parser.add_argument("--name", help="Experiment name (auto-generated if not provided)")
     parser.add_argument("--tags", nargs="+", help="Tags for experiment")
+    parser.add_argument("--random-seed", type=int, default=42, help="Random seed for reproducibility")
 
     args = parser.parse_args()
 
@@ -351,7 +354,8 @@ def main():
         end_date=args.end_date,
         initial_capital=args.capital,
         experiment_name=args.name,
-        tags=args.tags
+        tags=args.tags,
+        random_seed=args.random_seed
     )
 
     print(f"\n✅ Training complete! Experiment ID: {exp_id}")
