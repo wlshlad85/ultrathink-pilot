@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-10-21T20:06:30.671861",
+  "legacy_results": {
+    "system": "legacy",
+    "episodes": [
+      {
+        "episode": 1,
+        "total_time": 3.121286392211914,
+        "io_time": 0.001306295394897461,
+        "compute_time": 3.1199800968170166,
+        "steps": 272,
+        "reward": -0.06676638211191742,
+        "final_value": 99332.33617888083,
+        "return_pct": -0.6676638211191749
+      },
+      {
+        "episode": 2,
+        "total_time": 1.394913673400879,
+        "io_time": 0.0007767677307128906,
+        "compute_time": 1.394136905670166,
+        "steps": 272,
+        "reward": -0.02499267847482405,
+        "final_value": 99750.07321525176,
+        "return_pct": -0.24992678474824062
+      },
+      {
+        "episode": 3,
+        "total_time": 1.3510773181915283,
+        "io_time": 0.0007579326629638672,
+        "compute_time": 1.3503193855285645,
+        "steps": 272,
+        "reward": 0.1128043858885954,
+        "final_value": 101128.04385888595,
+        "return_pct": 1.1280438588859543
+      },
+      {
+        "episode": 4,
+        "total_time": 1.2852387428283691,
+        "io_time": 0.0010073184967041016,
+        "compute_time": 1.284231424331665,
+        "steps": 272,
+        "reward": 0.33646549908761225,
+        "final_value": 103364.65499087612,
+        "return_pct": 3.3646549908761223
+      },
+      {
+        "episode": 5,
+        "total_time": 1.272540807723999,
+        "io_time": 0.0010943412780761719,
+        "compute_time": 1.2714464664459229,
+        "steps": 272,
+        "reward": 0.045502360782735944,
+        "final_value": 100455.02360782736,
+        "return_pct": 0.45502360782735923
+      },
+      {
+        "episode": 6,
+        "total_time": 1.425053596496582,
+        "io_time": 0.0009038448333740234,
+        "compute_time": 1.424149751663208,
+        "steps": 272,
+        "reward": 0.910855492233437,
+        "final_value": 109108.55492233437,
+        "return_pct": 9.108554922334369
+      },
+      {
+        "episode": 7,
+        "total_time": 1.3475916385650635,
+        "io_time": 0.0007328987121582031,
+        "compute_time": 1.3468587398529053,
+        "steps": 272,
+        "reward": 0.7680813360659334,
+        "final_value": 107680.81336065933,
+        "return_pct": 7.680813360659333
+      },
+      {
+        "episode": 8,
+        "total_time": 1.416792392730713,
+        "io_time": 0.0012297630310058594,
+        "compute_time": 1.415562629699707,
+        "steps": 272,
+        "reward": 1.0072284914205698,
+        "final_value": 110186.80727710958,
+        "return_pct": 10.186807277109576
+      },
+      {
+        "episode": 9,
+        "total_time": 1.456146478652954,
+        "io_time": 0.0007979869842529297,
+        "compute_time": 1.4553484916687012,
+        "steps": 272,
+        "reward": 0.24375556915437946,
+        "final_value": 102437.55569154379,
+        "return_pct": 2.437555691543792
+      },
+      {
+        "episode": 10,
+        "total_time": 1.4713380336761475,
+        "io_time": 0.0010638236999511719,
+        "compute_time": 1.4702742099761963,
+        "steps": 272,
+        "reward": 1.044670823128936,
+        "final_value": 110630.89948590496,
+        "return_pct": 10.630899485904957
+      }
+    ],
+    "summary": {
+      "num_episodes": 10,
+      "total_time": 15.54197907447815,
+      "avg_time_per_episode": 1.554197907447815,
+      "total_io_time": 0.00967097282409668,
+      "io_percentage": 0.06222484779932314,
+      "avg_return_pct": 4.407476258927405,
+      "std_return_pct": 4.286485880867755,
+      "num_features": 43,
+      "cache_enabled": false,
+      "cache_hit_rate": 0
+    }
+  },
+  "new_results": {
+    "system": "new",
+    "episodes": [
+      {
+        "episode": 1,
+        "total_time": 0.8833928108215332,
+        "io_time": 0.003049612045288086,
+        "compute_time": 0.8803431987762451,
+        "steps": 129,
+        "reward": -0.5762317405607217,
+        "final_value": 100781.65732841488,
+        "return_pct": 0.7816573284148762
+      },
+      {
+        "episode": 2,
+        "total_time": 0.9207770824432373,
+        "io_time": 0.0025832653045654297,
+        "compute_time": 0.9181938171386719,
+        "steps": 113,
+        "reward": -0.5466292757624726,
+        "final_value": 100188.29723000154,
+        "return_pct": 0.18829723000153897
+      },
+      {
+        "episode": 3,
+        "total_time": 0.9684431552886963,
+        "io_time": 0.002513885498046875,
+        "compute_time": 0.9659292697906494,
+        "steps": 122,
+        "reward": -0.45681610135763356,
+        "final_value": 100907.85750522949,
+        "return_pct": 0.907857505229491
+      },
+      {
+        "episode": 4,
+        "total_time": 0.9323179721832275,
+        "io_time": 0.002685546875,
+        "compute_time": 0.9296324253082275,
+        "steps": 128,
+        "reward": -0.4914542658077991,
+        "final_value": 100071.8953612496,
+        "return_pct": 0.07189536124959704
+      },
+      {
+        "episode": 5,
+        "total_time": 0.9323580265045166,
+        "io_time": 0.0024967193603515625,
+        "compute_time": 0.929861307144165,
+        "steps": 126,
+        "reward": -0.5085701373172352,
+        "final_value": 101273.40967232749,
+        "return_pct": 1.2734096723274853
+      },
+      {
+        "episode": 6,
+        "total_time": 1.0284860134124756,
+        "io_time": 0.003297567367553711,
+        "compute_time": 1.0251884460449219,
+        "steps": 133,
+        "reward": -0.5317094185006779,
+        "final_value": 100305.2840293465,
+        "return_pct": 0.30528402934649784
+      },
+      {
+        "episode": 7,
+        "total_time": 0.9564642906188965,
+        "io_time": 0.0029349327087402344,
+        "compute_time": 0.9535293579101562,
+        "steps": 121,
+        "reward": -0.2976731333628812,
+        "final_value": 100315.51921533947,
+        "return_pct": 0.3155192153394746
+      },
+      {
+        "episode": 8,
+        "total_time": 0.7258560657501221,
+        "io_time": 0.0025773048400878906,
+        "compute_time": 0.7232787609100342,
+        "steps": 101,
+        "reward": -0.22738074081983234,
+        "final_value": 100182.57701782847,
+        "return_pct": 0.1825770178284729
+      },
+      {
+        "episode": 9,
+        "total_time": 0.7323307991027832,
+        "io_time": 0.0035858154296875,
+        "compute_time": 0.7287449836730957,
+        "steps": 101,
+        "reward": -0.1357356670149576,
+        "final_value": 100368.20174136499,
+        "return_pct": 0.3682017413649883
+      },
+      {
+        "episode": 10,
+        "total_time": 0.8547046184539795,
+        "io_time": 0.002655029296875,
+        "compute_time": 0.8520495891571045,
+        "steps": 105,
+        "reward": -0.20150432358368572,
+        "final_value": 100306.77149840193,
+        "return_pct": 0.3067714984019258
+      }
+    ],
+    "summary": {
+      "num_episodes": 10,
+      "total_time": 8.935130834579468,
+      "avg_time_per_episode": 0.8935130834579468,
+      "total_io_time": 0.02837967872619629,
+      "io_percentage": 0.31761906178659755,
+      "avg_return_pct": 0.4701470599504347,
+      "std_return_pct": 0.3664388336784268,
+      "num_features": 93,
+      "cache_enabled": true,
+      "cache_hit_rate": 0
+    }
+  },
+  "comparison": {
+    "speedup": 1.7394237826188064,
+    "io_reduction_pct": -0.2553942139872744,
+    "feature_increase": 50
+  },
+  "success_criteria": {
+    "io_time_reduced": true,
+    "training_faster": false,
+    "more_features": true,
+    "cache_effective": false
+  },
+  "overall_pass": false
+}
