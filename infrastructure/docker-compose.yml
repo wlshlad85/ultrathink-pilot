@@ -272,6 +272,7 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SERVICE_API_KEY: ${DATA_SERVICE_API_KEY:?DATA_SERVICE_API_KEY must be set in .env file}
     networks:
       - ultrathink-network
     healthcheck:
@@ -300,6 +301,7 @@ services:
       TIMESCALEDB_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SERVICE_API_KEY: ${REGIME_DETECTION_API_KEY:?REGIME_DETECTION_API_KEY must be set in .env file}
     volumes:
       - regime_models:/app/models
     networks:
@@ -332,6 +334,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      SERVICE_API_KEY: ${META_CONTROLLER_API_KEY:?META_CONTROLLER_API_KEY must be set in .env file}
     networks:
       - ultrathink-network
     restart: unless-stopped
@@ -395,6 +398,7 @@ services:
       TIMESCALE_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SERVICE_API_KEY: ${RISK_MANAGER_API_KEY:?RISK_MANAGER_API_KEY must be set in .env file}
     networks:
       - ultrathink-network
     healthcheck:
@@ -430,6 +434,11 @@ services:
       RISK_MANAGER_URL: http://risk-manager:8003
       KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      SERVICE_API_KEY: ${INFERENCE_SERVICE_API_KEY:?INFERENCE_SERVICE_API_KEY must be set in .env file}
+      DATA_SERVICE_API_KEY: ${DATA_SERVICE_API_KEY}
+      REGIME_DETECTION_API_KEY: ${REGIME_DETECTION_API_KEY}
+      META_CONTROLLER_API_KEY: ${META_CONTROLLER_API_KEY}
+      RISK_MANAGER_API_KEY: ${RISK_MANAGER_API_KEY}
     volumes:
       - ../rl/models:/app/models:ro
     networks:

@@ -18,6 +18,7 @@ class DataServiceClient:
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv('DATA_SERVICE_URL', 'http://data-service:8000')
         self.use_mock = os.getenv('MOCK_DATA_SERVICE', 'true').lower() == 'true'
+        self.api_key = os.getenv('DATA_SERVICE_API_KEY', '')
 
     async def get_features(self, symbol: str, timestamp: str) -> np.ndarray:
         """
@@ -34,10 +35,12 @@ class DataServiceClient:
             return self._mock_features()
 
         try:
+            headers = {'X-API-Key': self.api_key} if self.api_key else {}
             async with aiohttp.ClientSession() as session:
                 async with session.get(
                     f"{self.base_url}/api/v1/features/{symbol}",
                     params={'timestamp': timestamp},
+                    headers=headers,
                     timeout=aiohttp.ClientTimeout(total=0.1)  # 100ms timeout
                 ) as response:
                     if response.status == 200:
@@ -65,6 +68,7 @@ class RegimeDetectionClient:
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv('REGIME_DETECTION_URL', 'http://regime-detection:8001')
         self.use_mock = os.getenv('MOCK_REGIME_DETECTION', 'true').lower() == 'true'
+        self.api_key = os.getenv('REGIME_DETECTION_API_KEY', '')
 
     async def get_regime_probabilities(self, symbol: str) -> Dict[str, float]:
         """
@@ -77,10 +81,12 @@ class RegimeDetectionClient:
             return self._mock_regime_probs()
 
         try:
+            headers = {'X-API-Key': self.api_key} if self.api_key else {}
             async with aiohttp.ClientSession() as session:
                 async with session.get(
                     f"{self.base_url}/regime/probabilities",
                     params={'symbol': symbol},
+                    headers=headers,
                     timeout=aiohttp.ClientTimeout(total=0.05)  # 50ms timeout
                 ) as response:
                     if response.status == 200:
@@ -112,6 +118,7 @@ class MetaControllerClient:
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv('META_CONTROLLER_URL', 'http://meta-controller:8002')
         self.use_mock = os.getenv('MOCK_META_CONTROLLER', 'true').lower() == 'true'
+        self.api_key = os.getenv('META_CONTROLLER_API_KEY', '')
 
     async def get_strategy_weights(
         self,
@@ -130,10 +137,12 @@ class MetaControllerClient:
             return self._mock_strategy_weights(regime_probs)
 
         try:
+            headers = {'X-API-Key': self.api_key} if self.api_key else {}
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     f"{self.base_url}/strategy/weights",
                     json=regime_probs,
+                    headers=headers,
                     timeout=aiohttp.ClientTimeout(total=0.05)  # 50ms timeout
                 ) as response:
                     if response.status == 200:
@@ -169,6 +178,7 @@ class RiskManagerClient:
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv('RISK_MANAGER_URL', 'http://risk-manager:8003')
         self.use_mock = os.getenv('MOCK_RISK_MANAGER', 'true').lower() == 'true'
+        self.api_key = os.getenv('RISK_MANAGER_API_KEY', '')
 
     async def check_risk(
         self,
@@ -191,10 +201,12 @@ class RiskManagerClient:
             return self._mock_risk_check()
 
         try:
+            headers = {'X-API-Key': self.api_key} if self.api_key else {}
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     f"{self.base_url}/risk/check",
                     json={'symbol': symbol, 'action': action, 'quantity': quantity},
+                    headers=headers,
                     timeout=aiohttp.ClientTimeout(total=0.01)  # 10ms timeout
                 ) as response:
                     if response.status == 200:

@@ -20,6 +20,9 @@ import logging
 import os
 from contextlib import asynccontextmanager
 import requests
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from common_utils.auth_middleware import verify_api_key
 
 from meta_controller_v2 import (
     MetaControllerRL,
@@ -198,7 +201,7 @@ async def root():
     }
 
 
-@app.post("/api/v1/meta-controller/decide", response_model=DecisionResponse)
+@app.post("/api/v1/meta-controller/decide", response_model=DecisionResponse, dependencies=[Depends(verify_api_key)])
 async def decide_strategy_weights(request: DecisionRequest):
     """
     Decide strategy weights based on regime probabilities
@@ -284,7 +287,7 @@ async def decide_strategy_weights(request: DecisionRequest):
         raise HTTPException(status_code=500, detail=f"Decision failed: {str(e)}")
 
 
-@app.get("/api/v1/meta-controller/decide/{symbol}", response_model=DecisionResponse)
+@app.get("/api/v1/meta-controller/decide/{symbol}", response_model=DecisionResponse, dependencies=[Depends(verify_api_key)])
 async def decide_from_regime_service(
     symbol: str,
     use_epsilon_greedy: bool = Query(True, description="Apply exploration"),
@@ -345,7 +348,7 @@ async def decide_from_regime_service(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/v1/meta-controller/history/{symbol}", response_model=List[HistoryResponse])
+@app.get("/api/v1/meta-controller/history/{symbol}", response_model=List[HistoryResponse], dependencies=[Depends(verify_api_key)])
 async def get_decision_history(
     symbol: str,
     limit: int = Query(100, ge=1, le=1000, description="Maximum records")
@@ -396,7 +399,7 @@ async def get_decision_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/v1/meta-controller/update", response_model=PolicyUpdateResponse)
+@app.post("/api/v1/meta-controller/update", response_model=PolicyUpdateResponse, dependencies=[Depends(verify_api_key)])
 async def update_policy(request: PolicyUpdateRequest):
     """
     Trigger policy update (PPO training step)

@@ -8,12 +8,16 @@ from datetime import datetime
 from typing import Dict, Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uvicorn
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
 from fastapi.responses import Response
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from common_utils.auth_middleware import verify_api_key
 
 from portfolio_risk_manager import (
     PortfolioRiskManager,
@@ -182,7 +186,7 @@ async def health_check():
     )
 
 
-@app.post("/api/v1/risk/check", response_model=TradeCheckResponse)
+@app.post("/api/v1/risk/check", response_model=TradeCheckResponse, dependencies=[Depends(verify_api_key)])
 async def check_trade(request: TradeCheckRequest):
     """
     Validate proposed trade against portfolio risk constraints
@@ -258,7 +262,7 @@ async def check_trade(request: TradeCheckRequest):
         )
 
 
-@app.post("/api/v1/risk/execution")
+@app.post("/api/v1/risk/execution", dependencies=[Depends(verify_api_key)])
 async def update_execution(update: ExecutionUpdate):
     """
     Update portfolio state from execution
@@ -294,7 +298,7 @@ async def update_execution(update: ExecutionUpdate):
         )
 
 
-@app.get("/api/v1/risk/portfolio", response_model=PortfolioStateResponse)
+@app.get("/api/v1/risk/portfolio", response_model=PortfolioStateResponse, dependencies=[Depends(verify_api_key)])
 async def get_portfolio():
     """
     Get current portfolio state
@@ -316,7 +320,7 @@ async def get_portfolio():
         )
 
 
-@app.post("/api/v1/risk/price-update")
+@app.post("/api/v1/risk/price-update", dependencies=[Depends(verify_api_key)])
 async def update_price(symbol: str, price: float):
     """Update current price for a position"""
     try:
@@ -339,7 +343,7 @@ async def update_price(symbol: str, price: float):
         )
 
 
-@app.post("/api/v1/risk/reset-daily")
+@app.post("/api/v1/risk/reset-daily", dependencies=[Depends(verify_api_key)])
 async def reset_daily():
     """Reset daily P&L tracking (called at market open)"""
     try:
@@ -361,7 +365,7 @@ async def reset_daily():
         )
 
 
-@app.get("/metrics")
+@app.get("/metrics", dependencies=[Depends(verify_api_key)])
 async def metrics():
     """Prometheus metrics endpoint"""
     return Response(content=generate_latest(), media_type="text/plain")

@@ -9,12 +9,15 @@ from typing import Dict
 import logging
 import os
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from fastapi.responses import Response
 import torch
 import numpy as np
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from common_utils.auth_middleware import verify_api_key
 
 from models import (
     PredictRequest, PredictResponse, HealthResponse, ModelsResponse,
@@ -121,7 +124,7 @@ async def health_check():
     )
 
 
-@app.get("/api/v1/models", response_model=ModelsResponse, tags=["Models"])
+@app.get("/api/v1/models", response_model=ModelsResponse, tags=["Models"], dependencies=[Depends(verify_api_key)])
 async def list_models():
     """Get information about loaded models."""
     if model_cache is None:
@@ -205,7 +208,7 @@ def calculate_quantity(
     return max(1, quantity)  # At least 1 share
 
 
-@app.post("/api/v1/predict", response_model=PredictResponse, tags=["Prediction"])
+@app.post("/api/v1/predict", response_model=PredictResponse, tags=["Prediction"], dependencies=[Depends(verify_api_key)])
 async def predict(request: PredictRequest):
     """
     Make trading prediction.
@@ -323,7 +326,7 @@ async def predict(request: PredictRequest):
         ACTIVE_REQUESTS.dec()
 
 
-@app.get("/metrics", tags=["Metrics"])
+@app.get("/metrics", tags=["Metrics"], dependencies=[Depends(verify_api_key)])
 async def metrics():
     """Prometheus metrics endpoint."""
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

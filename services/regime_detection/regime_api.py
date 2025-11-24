@@ -11,7 +11,7 @@ Endpoints:
 Author: regime-detection-specialist
 """
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 from typing import Dict, List, Optional
@@ -21,6 +21,9 @@ from psycopg2.extras import RealDictCursor
 import os
 import logging
 from contextlib import contextmanager
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from common_utils.auth_middleware import verify_api_key
 
 from probabilistic_regime_detector import (
     ProbabilisticRegimeDetector,
@@ -251,7 +254,7 @@ async def root():
     }
 
 
-@app.post("/regime/probabilities", response_model=RegimeResponse)
+@app.post("/regime/probabilities", response_model=RegimeResponse, dependencies=[Depends(verify_api_key)])
 async def predict_regime_probabilities(market_data: MarketData):
     """
     Predict regime probability distribution for given market data
@@ -288,7 +291,7 @@ async def predict_regime_probabilities(market_data: MarketData):
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
-@app.get("/regime/probabilities/{symbol}", response_model=RegimeResponse)
+@app.get("/regime/probabilities/{symbol}", response_model=RegimeResponse, dependencies=[Depends(verify_api_key)])
 async def get_latest_regime(symbol: str):
     """
     Get latest regime probabilities for a symbol from database
@@ -337,7 +340,7 @@ async def get_latest_regime(symbol: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/regime/history/{symbol}", response_model=List[HistoricalRegimeData])
+@app.get("/regime/history/{symbol}", response_model=List[HistoricalRegimeData], dependencies=[Depends(verify_api_key)])
 async def get_regime_history(
     symbol: str,
     hours: int = Query(default=24, ge=1, le=720, description="Hours of history to retrieve")
@@ -385,7 +388,7 @@ async def get_regime_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/regime/fit")
+@app.post("/regime/fit", dependencies=[Depends(verify_api_key)])
 async def fit_detector(request: FitRequest):
     """
     Fit or update regime detector with new market data

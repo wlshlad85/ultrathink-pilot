@@ -11,10 +11,16 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Query, Path, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query, Path, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
+# Import authentication middleware
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from common_utils.auth_middleware import verify_api_key
 
 from .feature_cache_manager import FeatureCacheManager, FeatureRequest as FCMFeatureRequest
 from .models import (
@@ -148,7 +154,8 @@ async def health_check():
     "/api/v1/features/{symbol}",
     response_model=FeatureResponse,
     tags=["Features"],
-    summary="Get features for a symbol"
+    summary="Get features for a symbol",
+    dependencies=[Depends(verify_api_key)]
 )
 async def get_features(
     symbol: str = Path(..., description="Trading symbol (e.g., BTC-USD)"),
@@ -204,7 +211,8 @@ async def get_features(
     "/api/v1/features/batch",
     response_model=BatchFeatureResponse,
     tags=["Features"],
-    summary="Get features for multiple symbols"
+    summary="Get features for multiple symbols",
+    dependencies=[Depends(verify_api_key)]
 )
 async def get_batch_features(request: BatchFeatureRequest):
     """
@@ -275,7 +283,8 @@ async def get_batch_features(request: BatchFeatureRequest):
     "/api/v1/features",
     response_model=FeatureListResponse,
     tags=["Features"],
-    summary="List available features"
+    summary="List available features",
+    dependencies=[Depends(verify_api_key)]
 )
 async def list_features():
     """
@@ -301,7 +310,7 @@ async def list_features():
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.get("/metrics", response_model=MetricsResponse, tags=["Monitoring"])
+@app.get("/metrics", response_model=MetricsResponse, tags=["Monitoring"], dependencies=[Depends(verify_api_key)])
 async def get_metrics():
     """
     Get service performance metrics
@@ -353,7 +362,8 @@ async def get_metrics():
 @app.post(
     "/api/v1/cache/warm",
     response_model=WarmCacheResponse,
-    tags=["Cache Management"]
+    tags=["Cache Management"],
+    dependencies=[Depends(verify_api_key)]
 )
 async def warm_cache(request: WarmCacheRequest, background_tasks: BackgroundTasks):
     """
@@ -403,7 +413,8 @@ async def warm_cache(request: WarmCacheRequest, background_tasks: BackgroundTask
 @app.delete(
     "/api/v1/cache/{symbol}",
     tags=["Cache Management"],
-    summary="Invalidate cache for symbol"
+    summary="Invalidate cache for symbol",
+    dependencies=[Depends(verify_api_key)]
 )
 async def invalidate_cache(
     symbol: str = Path(..., description="Symbol to invalidate (or 'all' for complete cache clear)"),
