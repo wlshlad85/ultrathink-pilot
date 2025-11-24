@@ -15,16 +15,16 @@ docker-compose up -d risk-manager
 
 ```bash
 # Check health
-curl http://localhost:8001/health
+curl http://localhost:8003/health
 
 # Check metrics
-curl http://localhost:8001/metrics
+curl http://localhost:8003/metrics
 ```
 
 ### Test Risk Check
 
 ```bash
-curl -X POST http://localhost:8001/api/v1/risk/check \
+curl -X POST http://localhost:8003/api/v1/risk/check \
   -H "Content-Type: application/json" \
   -d '{
     "symbol": "AAPL",
@@ -139,7 +139,7 @@ Prometheus metrics endpoint.
 
 ## Monitoring Metrics
 
-Available at `http://localhost:8001/metrics`:
+Available at `http://localhost:8003/metrics`:
 
 - `risk_checks_total{result}` - Total risk checks (approved/rejected)
 - `risk_check_latency_seconds` - Latency histogram
@@ -191,7 +191,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Service will be available at `http://localhost:8001`
+Service will be available at `http://localhost:8003`
 
 ### Docker Build
 
@@ -244,7 +244,7 @@ async def check_trade_risk(symbol, action, quantity, price):
         }
 
         async with session.post(
-            "http://risk-manager:8001/api/v1/risk/check",
+            "http://risk-manager:8003/api/v1/risk/check",
             json=request
         ) as resp:
             result = await resp.json()
@@ -294,8 +294,8 @@ async def check_trade_risk(symbol, action, quantity, price):
 
 For issues or questions:
 - Check logs: `docker logs ultrathink-risk-manager`
-- Review metrics: `http://localhost:8001/metrics`
-- Run health check: `http://localhost:8001/health`
+- Review metrics: `http://localhost:8003/metrics`
+- Run health check: `http://localhost:8003/health`
 
 ---
 

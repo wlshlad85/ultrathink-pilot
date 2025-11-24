@@ -47,7 +47,7 @@ DB_CONFIG = {
     'port': int(os.getenv('TIMESCALEDB_PORT', 5432)),
     'database': os.getenv('TIMESCALEDB_DATABASE', 'ultrathink_experiments'),
     'user': os.getenv('TIMESCALEDB_USER', 'ultrathink'),
-    'password': os.getenv('TIMESCALEDB_PASSWORD', 'changeme_in_production')
+    'password': os.environ['TIMESCALEDB_PASSWORD']  # Required: no default for security
 }
 
 

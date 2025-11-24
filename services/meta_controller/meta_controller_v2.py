@@ -570,9 +570,13 @@ class MetaControllerDB:
         port: int = 5432,
         database: str = 'ultrathink_experiments',
         user: str = 'ultrathink',
-        password: str = 'changeme_in_production'
+        password: str = None
     ):
         """Initialize database connection"""
+        # Security: password must be provided, no insecure default
+        if password is None:
+            password = os.environ['TIMESCALEDB_PASSWORD']
+
         self.db_config = {
             'host': host,
             'port': port,

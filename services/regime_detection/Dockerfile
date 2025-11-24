@@ -24,12 +24,12 @@ COPY regime_api.py .
 # Create directories for model storage
 RUN mkdir -p /app/models /app/logs
 
-# Environment variables (overridable)
+# Environment variables (overridable via docker-compose)
+# SECURITY: TIMESCALEDB_PASSWORD must be provided via docker-compose environment
 ENV TIMESCALEDB_HOST=timescaledb \
     TIMESCALEDB_PORT=5432 \
     TIMESCALEDB_DATABASE=ultrathink_experiments \
     TIMESCALEDB_USER=ultrathink \
-    TIMESCALEDB_PASSWORD=changeme_in_production \
     PYTHONUNBUFFERED=1
 
 # Expose API port

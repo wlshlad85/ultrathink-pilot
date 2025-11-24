@@ -410,7 +410,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8001,
+        port=int(os.getenv('PORT', '8003')),  # Changed from 8001 to 8003 (port conflict resolution)
         reload=False,
         log_level="info"
     )

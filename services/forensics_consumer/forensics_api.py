@@ -55,7 +55,7 @@ def get_db_connection():
         'port': int(os.environ.get('TIMESCALEDB_PORT', '5432')),
         'database': os.environ.get('TIMESCALEDB_DATABASE', 'ultrathink_experiments'),
         'user': os.environ.get('TIMESCALEDB_USER', 'ultrathink'),
-        'password': os.environ.get('TIMESCALEDB_PASSWORD', 'changeme_in_production')
+        'password': os.environ['TIMESCALEDB_PASSWORD']  # Required: no default for security
     }
 
     try:

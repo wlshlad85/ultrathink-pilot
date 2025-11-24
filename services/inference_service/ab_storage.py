@@ -41,7 +41,9 @@ class ABTestStorageBackend:
         self.port = port or int(os.getenv('TIMESCALE_PORT', '5432'))
         self.database = database or os.getenv('TIMESCALE_DB', 'ultrathink_experiments')
         self.user = user or os.getenv('TIMESCALE_USER', 'ultrathink')
-        self.password = password or os.getenv('TIMESCALE_PASSWORD', 'ultrathink_changeme')
+        self.password = password or os.environ.get('TIMESCALE_PASSWORD')  # Required: no default for security
+        if not self.password:
+            raise ValueError("TIMESCALE_PASSWORD environment variable must be set")
 
         self.pool: Optional[asyncpg.Pool] = None
 
