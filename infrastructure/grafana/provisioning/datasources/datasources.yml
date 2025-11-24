@@ -12,18 +12,16 @@ datasources:
       timeInterval: 5s
       queryTimeout: 60s
 
-  # TimescaleDB data source for training metrics
-  - name: TimescaleDB
-    type: postgres
-    access: proxy
-    url: timescaledb:5432
-    database: ultrathink_experiments
-    user: ultrathink
-    isDefault: true
-    editable: true
-    secureJsonData:
-      password: changeme_in_production
-    jsonData:
-      sslmode: disable
-      postgresVersion: 1500
-      timescaledb: true
+  # TimescaleDB data source - CONFIGURE MANUALLY
+  # See: infrastructure/GRAFANA_DATASOURCE_SETUP.md for setup instructions
+  # Grafana provisioning doesn't support env vars for passwords, so this
+  # datasource must be added manually via Grafana UI after first login.
+  #
+  # Configuration:
+  #   Type: PostgreSQL
+  #   Host: timescaledb:5432
+  #   Database: ultrathink_experiments
+  #   User: ultrathink
+  #   Password: ${POSTGRES_PASSWORD} from .env file
+  #   SSL Mode: disable
+  #   TimescaleDB: enabled
