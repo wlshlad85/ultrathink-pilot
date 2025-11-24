@@ -4,9 +4,9 @@ services:
     image: timescale/timescaledb:latest-pg15
     container_name: ultrathink-timescaledb
     environment:
-      POSTGRES_DB: ultrathink_experiments
-      POSTGRES_USER: ultrathink
-      POSTGRES_PASSWORD: changeme_in_production
+      POSTGRES_DB: ${POSTGRES_DB:-ultrathink_experiments}
+      POSTGRES_USER: ${POSTGRES_USER:-ultrathink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env file}
     ports:
       - "5432:5432"
     volumes:
@@ -30,13 +30,15 @@ services:
     ports:
       - "5000:5000"
     environment:
-      MLFLOW_BACKEND_STORE_URI: postgresql://ultrathink:changeme_in_production@timescaledb:5432/mlflow_tracking
+      POSTGRES_USER: ${POSTGRES_USER:-ultrathink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MLFLOW_BACKEND_STORE_URI: postgresql://${POSTGRES_USER:-ultrathink}:${POSTGRES_PASSWORD}@timescaledb:5432/mlflow_tracking
       MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlflow/artifacts
     volumes:
       - mlflow_artifacts:/mlflow/artifacts
     command: >
       mlflow server
-      --backend-store-uri postgresql://ultrathink:changeme_in_production@timescaledb:5432/mlflow_tracking
+      --backend-store-uri postgresql://${POSTGRES_USER:-ultrathink}:${POSTGRES_PASSWORD}@timescaledb:5432/mlflow_tracking
       --default-artifact-root /mlflow/artifacts
       --host 0.0.0.0
       --port 5000
@@ -98,8 +100,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env file}
+      GF_SECURITY_SECRET_KEY: ${GF_SECURITY_SECRET_KEY:?GF_SECURITY_SECRET_KEY must be set in .env file}
       GF_INSTALL_PLUGINS: grafana-clock-panel
     volumes:
       - grafana_data:/var/lib/grafana
@@ -292,9 +295,9 @@ services:
     environment:
       TIMESCALEDB_HOST: timescaledb
       TIMESCALEDB_PORT: 5432
-      TIMESCALEDB_DATABASE: ultrathink_experiments
-      TIMESCALEDB_USER: ultrathink
-      TIMESCALEDB_PASSWORD: changeme_in_production
+      TIMESCALEDB_DATABASE: ${POSTGRES_DB:-ultrathink_experiments}
+      TIMESCALEDB_USER: ${POSTGRES_USER:-ultrathink}
+      TIMESCALEDB_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
     volumes:
@@ -376,7 +379,7 @@ services:
     build: ../services/risk_manager
     container_name: ultrathink-risk-manager
     ports:
-      - "8001:8001"
+      - "8003:8003"
     depends_on:
       timescaledb:
         condition: service_healthy
@@ -387,15 +390,15 @@ services:
     environment:
       TIMESCALE_HOST: timescaledb
       TIMESCALE_PORT: 5432
-      TIMESCALE_DB: ultrathink_experiments
-      TIMESCALE_USER: ultrathink
-      TIMESCALE_PASSWORD: changeme_in_production
+      TIMESCALE_DB: ${POSTGRES_DB:-ultrathink_experiments}
+      TIMESCALE_USER: ${POSTGRES_USER:-ultrathink}
+      TIMESCALE_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
     networks:
       - ultrathink-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -465,9 +468,9 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
       TIMESCALEDB_HOST: timescaledb
       TIMESCALEDB_PORT: 5432
-      TIMESCALEDB_DATABASE: ultrathink_experiments
-      TIMESCALEDB_USER: ultrathink
-      TIMESCALEDB_PASSWORD: changeme_in_production
+      TIMESCALEDB_DATABASE: ${POSTGRES_DB:-ultrathink_experiments}
+      TIMESCALEDB_USER: ${POSTGRES_USER:-ultrathink}
+      TIMESCALEDB_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - ultrathink-network
     healthcheck:
