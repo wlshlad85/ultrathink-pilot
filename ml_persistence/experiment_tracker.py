@@ -382,7 +382,16 @@ class ExperimentTracker:
             query += " AND status = ?"
             params.append(status)
 
-        # TODO: Add tag filtering (requires JSON parsing in SQLite)
+        # Tag filtering using SQLite JSON functions
+        if tags:
+            # Build OR condition for tag matching
+            # For each tag, check if it exists in the JSON array
+            tag_conditions = []
+            for tag in tags:
+                tag_conditions.append("EXISTS (SELECT 1 FROM json_each(tags) WHERE value = ?)")
+                params.append(tag)
+
+            query += f" AND ({' OR '.join(tag_conditions)})"
 
         query += " ORDER BY start_time DESC LIMIT ?"
         params.append(limit)
